@@ -27,3 +27,7 @@ corrispoding to that observation's class"
                       1))
              class-num-vec))))
 
+(defn horizontal-matrix-concatenation
+  "Same as horzcat() function from MATLAB."
+  [matrix-1 matrix-2]
+  (map join (rows matrix-1) (rows matrix-2)))
