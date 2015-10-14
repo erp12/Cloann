@@ -15,7 +15,7 @@
   (let [net (* weight-matrix
                (horizontal-matrix-concatenation input-matrix bias-node-matrix))
         output (emap (:activation-func @nn-params) net)]
-    ;; OUTPUT value not correct. Must check what activate() does from blog post.
+    ;; OUTPUT value may not correct. Unclear what activate() does from blog post.
     [net output]))
 
 (defn generate-initial-weight-matrix
@@ -32,7 +32,12 @@
 
 (defn evaluate-network
   [input-matrix weight-matrix target-output-matrix target-class-matrix bias-matrix]
-  ())
+  (let [outputs (first (feed-forward input-matrix weight-matrix bias-matrix))
+        error (/ (sum-all-2D-matrix-components (Math/pow (- ()
+                                                            ())
+                                                         2))
+                 (* ))]
+    ()))
 
 (defn -main 
   []

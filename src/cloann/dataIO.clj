@@ -4,6 +4,31 @@
   (:use clojure.core.matrix)
   (:use clojure.core.matrix.operators))
 
+(def empty-data-set
+  {:input-count 0
+   :output-count 0
+   :training-set {:inputs []
+                  :outputs []
+                  :classes []
+                  :count 0
+                  :bias []}
+   :validation-set {:inputs []
+                    :outputs []
+                    :classes []
+                    :count 0
+                    :bias []}
+   :test-set {:inputs []
+              :outputs []
+              :classes []
+              :count 0
+              :bias []}})
+
+(defn create-data-set
+  "How is this going to work? Direct from CSV?"
+  []
+  ())
+
+
 (defn string->number [s]
   "Found on: http://stackoverflow.com/questions/10752659/how-to-convert-a-numeric-string-to-number-decimal-and-number-to-string"
   (let [n (read-string s)]

@@ -31,3 +31,9 @@ corrispoding to that observation's class"
   "Same as horzcat() function from MATLAB."
   [matrix-1 matrix-2]
   (map join (rows matrix-1) (rows matrix-2)))
+
+(defn sum-all-2D-matrix-components
+  [matrix]
+  (apply + 
+         (apply + 
+                matrix)))
