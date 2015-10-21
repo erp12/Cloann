@@ -19,6 +19,7 @@
     [net output]))
 
 (defn generate-initial-weight-matrix
+  "Random weight matrix."
   [max-weight matrix-width matrix-height]
   (matrix
     (vec

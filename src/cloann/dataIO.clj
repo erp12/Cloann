@@ -1,4 +1,5 @@
 (ns cloann.dataIO
+  (:use [cloann util])
   (:require [clojure.data.csv :as csv]
             [clojure.java.io :as io])
   (:use clojure.core.matrix)
@@ -22,12 +23,6 @@
               :classes []
               :count 0
               :bias []}})
-
-(defn create-data-set
-  "How is this going to work? Direct from CSV?"
-  []
-  ())
-
 
 (defn string->number [s]
   "Found on: http://stackoverflow.com/questions/10752659/how-to-convert-a-numeric-string-to-number-decimal-and-number-to-string"
@@ -55,3 +50,29 @@ If is-first-row-labels is true, excludes the first row."
   [matrix filename]
   (with-open [out-file (io/writer (str "dataOut/" filename))]
     (csv/write-csv out-file matrix)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Creating Data Sets
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn create-data-sub-set-from-matrix
+  "Puts random sub-set of data inside a matrix into a data sub-set map. ALMOST DONE!!"
+  [matrix data-subset-count input-indexes output-indexes classes bias]
+  (let [sampled-rows (repeatedly data-subset-count #(rand-nth matrix))]
+    (-> {}
+      (assoc :count data-subset-count)
+      (assoc :bias (vec (take data-subset-count (repeat 1))))
+      (assoc :inputs (map #(vec (filter-by-index % %2)) sampled-rows (repeat input-indexes)))
+      (assoc :outputs (map #(vec (filter-by-index % %2)) sampled-rows (repeat output-indexes)))
+      (assoc :classes []))))  ; <-- Work this shit out!
+
+(defn create-data-set-from-matrix
+  "Creates a data set from one single matrix.  NOT DONE YET!!!"
+  [matrix input-indexes output-indexes training-count testing-count validation-count]
+  (-> empty-data-set
+    (assoc :input-count (count input-indexes))
+    (assoc :output-count (count input-indexes))
+    (assoc :training-set (create-data-sub-set-from-matrix matrix
+                                                          training-count
+                                                          input-indexes
+                                                          output-indexes
+                                                          ))))

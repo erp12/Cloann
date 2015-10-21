@@ -37,3 +37,9 @@ corrispoding to that observation's class"
   (apply + 
          (apply + 
                 matrix)))
+
+(defn filter-by-index [coll idxs]
+  "Filters out only certain indexes in a vector.
+Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elements-from-a-sequence-based-on-indexes"
+  (keep-indexed #(when ((set idxs) %1) %2) 
+                coll))  
