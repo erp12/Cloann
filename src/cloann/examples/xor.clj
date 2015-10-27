@@ -13,7 +13,7 @@
   (reset!
     cloann/nn-params
     (merge @cloann/nn-params
-         {:data-set (dIO/create-data-set-from-matrix data-matrix
+         {:data-sets (dIO/create-data-sets-from-matrix data-matrix
                                                      [0 1] ; Input indexes
                                                      [2]   ; Output indexes
                                                      500   ; Number of observations to take for training

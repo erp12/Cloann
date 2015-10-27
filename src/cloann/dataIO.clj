@@ -5,7 +5,7 @@
   (:use clojure.core.matrix)
   (:use clojure.core.matrix.operators))
 
-(def empty-data-set
+(def empty-data-sets
   {:input-count 0
    :output-count 0
    :training-set {:inputs []
@@ -64,12 +64,12 @@ If is-first-row-labels is true, excludes the first row."
       (assoc :bias (take data-subset-count bias))
       (assoc :inputs (map #(vec (util/filter-by-index % %2)) sampled-rows (repeat input-indexes)))
       (assoc :outputs outputs)
-      (assoc :classes (map outputs)))))
+      (assoc :classes (map util/output->class outputs)))))
 
-(defn create-data-set-from-matrix
-  "Creates a data set from one single matrix.  NOT DONE YET!!!"
+(defn create-data-sets-from-matrix
+  "Creates a data set from one single matrix."
   [matrix input-indexes output-indexes training-count testing-count validation-count]
-  (-> empty-data-set
+  (-> empty-data-sets
     (assoc :input-count (count input-indexes))
     (assoc :output-count (count output-indexes))
     (assoc :training-set (create-data-sub-set-from-matrix matrix

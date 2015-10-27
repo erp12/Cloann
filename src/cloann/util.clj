@@ -12,7 +12,7 @@
 corrispoding to that observation's class"
   [output-matrix]
   (map (fn [v]
-         (.indexOf v 1))
+         (.indexOf v (max v))
        output-matrix))
 
 (defn class->output
