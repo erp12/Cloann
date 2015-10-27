@@ -1,19 +1,21 @@
 (ns cloann.core
   (:gen-class)
-  (:use [cloann util activation-functions])
+  (:require [cloann.util :as util]
+            [cloann.activation-functions :as act-funcs])
   (:use clojure.core.matrix)
   (:use clojure.core.matrix.operators))
 
-(def nn-params 
+(def nn-params
   (atom 
-    {:activation-func hyperbolic-tangent
-     :activation-func-derivative hyperbolic-tangent-derivative
-     :max-weight 1}))
+    {:activation-func act-funcs/hyperbolic-tangent
+     :activation-func-derivative act-funcs/hyperbolic-tangent-derivative
+     :max-weight 1
+     :data-set nil}))
 
 (defn feed-forward
   [input-matrix weight-matrix bias-node-matrix]
   (let [net (* weight-matrix
-               (horizontal-matrix-concatenation input-matrix bias-node-matrix))
+               (util/horizontal-matrix-concatenation input-matrix bias-node-matrix))
         output (emap (:activation-func @nn-params) net)]
     ;; OUTPUT value may not correct. Unclear what activate() does from blog post.
     [net output]))
@@ -34,7 +36,7 @@
 (defn evaluate-network
   [input-matrix weight-matrix target-output-matrix target-class-matrix bias-matrix]
   (let [outputs (first (feed-forward input-matrix weight-matrix bias-matrix))
-        error (/ (sum-all-2D-matrix-components (Math/pow (- ()
+        error (/ (util/sum-all-2D-matrix-components (Math/pow (- ()
                                                             ())
                                                          2))
                  (* ))]

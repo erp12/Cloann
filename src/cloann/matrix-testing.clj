@@ -1,6 +1,7 @@
 (ns cloann.matrix-testing
   (:gen-class)
-  (:use [cloann util activation-functions])
+  (:require [cloann.util :as util]
+            [cloann.activation-functions :as act-funcs])
   (:use clojure.core.matrix)
   (:use clojure.core.matrix.operators))
 

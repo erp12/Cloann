@@ -1,5 +1,5 @@
 (ns cloann.activation-functions
-  (:use [cloann util])
+  (:require [cloann.util :as util])
   (:use clojure.core.matrix)
   (:use clojure.core.matrix.operators))
 
@@ -40,7 +40,7 @@
 (defn softplus
   "Smoothed ReLU"
   [x]
-  (nat-log (+ 1
+  (util/nat-log (+ 1
               (Math/pow Math/E x))))
 
 (defn softplus-derivative

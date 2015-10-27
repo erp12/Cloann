@@ -1,6 +1,6 @@
 (ns cloann.dataIO
-  (:use [cloann util])
-  (:require [clojure.data.csv :as csv]
+  (:require [cloann.util :as util]
+            [clojure.data.csv :as csv]
             [clojure.java.io :as io])
   (:use clojure.core.matrix)
   (:use clojure.core.matrix.operators))
@@ -55,24 +55,38 @@ If is-first-row-labels is true, excludes the first row."
 ;;  Creating Data Sets
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn create-data-sub-set-from-matrix
-  "Puts random sub-set of data inside a matrix into a data sub-set map. ALMOST DONE!!"
+  "Puts random sub-set of a matrix into a data sub-set map."
   [matrix data-subset-count input-indexes output-indexes classes bias]
-  (let [sampled-rows (repeatedly data-subset-count #(rand-nth matrix))]
+  (let [sampled-rows (repeatedly data-subset-count #(rand-nth matrix))
+        outputs (map #(vec (util/filter-by-index % %2)) sampled-rows (repeat output-indexes))]
     (-> {}
       (assoc :count data-subset-count)
-      (assoc :bias (vec (take data-subset-count (repeat 1))))
-      (assoc :inputs (map #(vec (filter-by-index % %2)) sampled-rows (repeat input-indexes)))
-      (assoc :outputs (map #(vec (filter-by-index % %2)) sampled-rows (repeat output-indexes)))
-      (assoc :classes []))))  ; <-- Work this shit out!
+      (assoc :bias (take data-subset-count bias))
+      (assoc :inputs (map #(vec (util/filter-by-index % %2)) sampled-rows (repeat input-indexes)))
+      (assoc :outputs outputs)
+      (assoc :classes (map outputs)))))
 
 (defn create-data-set-from-matrix
   "Creates a data set from one single matrix.  NOT DONE YET!!!"
   [matrix input-indexes output-indexes training-count testing-count validation-count]
   (-> empty-data-set
     (assoc :input-count (count input-indexes))
-    (assoc :output-count (count input-indexes))
+    (assoc :output-count (count output-indexes))
     (assoc :training-set (create-data-sub-set-from-matrix matrix
                                                           training-count
                                                           input-indexes
                                                           output-indexes
-                                                          ))))
+                                                          (vec (range (count output-indexes)))
+                                                          (repeat 1)))
+    (assoc :testing-set (create-data-sub-set-from-matrix matrix
+                                                          testing-count
+                                                          input-indexes
+                                                          output-indexes
+                                                          (vec (range (count output-indexes)))
+                                                          (repeat 1)))
+    (assoc :validation-set (create-data-sub-set-from-matrix matrix
+                                                          validation-count
+                                                          input-indexes
+                                                          output-indexes
+                                                          (vec (range (count output-indexes)))
+                                                          (repeat 1)))))
