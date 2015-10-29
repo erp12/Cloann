@@ -12,7 +12,7 @@
 corrispoding to that observation's class"
   [output-matrix]
   (map (fn [v]
-         (.indexOf v (max v))
+         (.indexOf v (max v)))
        output-matrix))
 
 (defn class->output
@@ -42,4 +42,4 @@ corrispoding to that observation's class"
   "Filters out only certain indexes in a vector.
 Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elements-from-a-sequence-based-on-indexes"
   (keep-indexed #(when ((set idxs) %1) %2) 
-                coll))  
+                coll))
