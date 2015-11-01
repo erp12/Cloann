@@ -7,6 +7,12 @@
   [x]
   (/ (Math/log x) (Math/log Math/E)))
 
+(defn get-date-time-string
+  "Returns date and time.
+Taken from: http://stackoverflow.com/questions/4635680/what-is-the-best-way-to-get-date-and-time-in-clojure"
+  []
+  (new java.util.Date))
+
 (defn output->class
   "Converts the output matrix of the ANN to a single number per observation,
 corrispoding to that observation's class"
