@@ -23,4 +23,4 @@
                                          10   ; Number of observations to take for testing
                                          10)) ; Number of observations to take for validation
 
-(:count (:training ds))
+(:count (:training-set ds))
