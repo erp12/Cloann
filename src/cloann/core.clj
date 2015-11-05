@@ -43,7 +43,8 @@
   [data-set weight-matrix]
   (let [; Store the result of feeding the data-set into the network
         ff-result (feed-forward (:inputs data-set)
-                                weight-matrix)
+                                weight-matrix
+                                (:bias data-set))
         ; Pull out the output from the feed forward result
         output (second ff-result)
         ; Pull out the resulting network from the feed forward.
@@ -69,16 +70,16 @@
   [data-sets]
   (let [; Inital randomized weights to the network
         init-weight-matrix (generate-initial-weight-matrix 1
-                                                      (inc (:input-counts data-sets))
-                                                      (:output-count data-sets))
+                                                           (inc (:input-count data-sets))
+                                                           (:output-count data-sets))
         ; Bias vectors for the various data-sets
-        training-bias (repeat (:count (:training data-sets)) 1)
-        testing-bias (repeat (:count (:testing data-sets)) 1)
-        validation-bias (repeat (:count (:validation data-sets)) 1)]
+        training-bias (repeat (:count (:training-set data-sets)) 1)
+        testing-bias (repeat (:count (:testing-set data-sets)) 1)
+        validation-bias (repeat (:count (:validation-set data-sets)) 1)]
     (loop [; nn's training epoch
            epoch 0
-           ; unputs to the network
-           inputs (:inputs (:training data-sets))
+           ; inputs to the network
+           inputs (:inputs (:training-set data-sets))
            ; current set of weights for the network
            weights init-weight-matrix
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -98,30 +99,31 @@
                                       testing-classification-error
                                       validation-error
                                       validation-classification-error))
-        (let [training-eval (evaluate-network (:training data-sets) weights)
-              testing-eval (evaluate-network (:testing data-sets) weights)
-              validation-eval (evaluate-network (:validation data-sets) weights)]
+        (let [training-eval (evaluate-network (:training-set data-sets) weights)
+              testing-eval (evaluate-network (:testing-set data-sets) weights)
+              validation-eval (evaluate-network (:validation-set data-sets) weights)]
           (recur 
-          ; Increment the epoch number
-          (inc epoch)
-          ; Inputs stay the same
-          inputs
-          ; Apply the results of the backpropagation as the new weights
-          (backpropagation inputs 
-                           weights 
-                           (:learning-rate @nn-params))
-          ;;;;;;;;;;;;;;;;;;;;;;;;
-          ; Append errors to vectors for reporting
-          (conj training-error (first training-eval))
-          (conj training-classification-error (second training-eval))
-          (conj testing-error (first testing-eval))
-          (conj testing-classification-error (second testing-eval))
-          (conj validation-error (first validation-eval))
-          (conj validation-classification-error (second validation-eval))))))))
+            ; Increment the epoch number
+            (inc epoch)
+            ; Inputs stay the same
+            inputs
+            ; Apply the results of the backpropagation as the new weights
+            (backpropagation inputs 
+                             weights 
+                             (:learning-rate @nn-params))
+            ;;;;;;;;;;;;;;;;;;;;;;;;
+            ; Append errors to vectors for reporting
+            (conj training-error (first training-eval))
+            (conj training-classification-error (second training-eval))
+            (conj testing-error (first testing-eval))
+            (conj testing-classification-error (second testing-eval))
+            (conj validation-error (first validation-eval))
+            (conj validation-classification-error (second validation-eval))))))))
 
 (defn run-cloann
   [params]
   (swap! nn-params #(merge % params))
+  ;(println (:data-sets @nn-params))
   (train-nn (:data-sets @nn-params)))
 
 

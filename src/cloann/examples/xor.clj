@@ -11,8 +11,8 @@
   {:data-sets (dIO/create-data-sets-from-matrix data-matrix
                                                 [0 1] ; Input indexes
                                                 [2]   ; Output indexes
-                                                500   ; Number of observations to take for training
-                                                100   ; Number of observations to take for testing
-                                                100)}); Number of observations to take for validation
+                                                20   ; Number of observations to take for training
+                                                10   ; Number of observations to take for testing
+                                                10)}); Number of observations to take for validation
 
 ;(cloann/run-cloann nn-params)

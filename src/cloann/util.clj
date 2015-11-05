@@ -18,7 +18,7 @@ Taken from: http://stackoverflow.com/questions/4635680/what-is-the-best-way-to-g
 corrispoding to that observation's class"
   [output-matrix]
   (map (fn [v]
-         (.indexOf v (max v)))
+         (.indexOf v (apply max v)))
        output-matrix))
 
 (defn class->output
