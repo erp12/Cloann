@@ -35,6 +35,9 @@ corrispoding to that observation's class"
 (defn horizontal-matrix-concatenation
   "Same as horzcat() function from MATLAB."
   [matrix-1 matrix-2]
+  ;(println matrix-1)
+  ;(println matrix-2)
+  ;(println "")
   (array (vec (map join (rows matrix-1) (rows matrix-2)))))
 
 (defn sum-all-2D-matrix-components

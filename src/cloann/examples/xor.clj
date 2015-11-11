@@ -5,14 +5,14 @@
 
 ;; Matrix of all the data from the csv file
 (def data-matrix
-  (dIO/csv->matrix "XOR_no_heading.csv" true))
+  (dIO/csv->matrix "data/XOR_with_headings.csv" true))
 
 (def nn-params
   {:data-sets (dIO/create-data-sets-from-matrix data-matrix
                                                 [0 1] ; Input indexes
-                                                [2]   ; Output indexes
-                                                20   ; Number of observations to take for training
-                                                10   ; Number of observations to take for testing
-                                                10)}); Number of observations to take for validation
+                                                [2,3]   ; Output indexes
+                                                500   ; Number of observations to take for training
+                                                300   ; Number of observations to take for testing
+                                                300)}); Number of observations to take for validation
 
 ;(cloann/run-cloann nn-params)

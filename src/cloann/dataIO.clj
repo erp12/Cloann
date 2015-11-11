@@ -34,7 +34,7 @@
 If is-first-row-labels is true, excludes the first row."
   [filename is-first-row-labels]
   (let [new-matrix (array
-                      (with-open [in-file (io/reader (str "data/" filename))]
+                      (with-open [in-file (io/reader filename)]
                         (doall
                           (vec
                             (->> (csv/read-csv in-file)
