@@ -20,9 +20,14 @@
 (defn feed-forward
   "Computes the output of the neural network given the inputs and the weights."
   [input-matrix weight-matrix bias-node-matrix]
-  (let [net (* weight-matrix
-               (util/horizontal-matrix-concatenation input-matrix bias-node-matrix))
+  ;(println "ff-weight-matrix" (shape weight-matrix))
+  ;(println "ff-input-matrix" (shape input-matrix))
+  (let [temp (transpose (util/horizontal-matrix-concatenation input-matrix bias-node-matrix))
+        net (inner-product weight-matrix
+                           temp)
         output (emap (:activation-func @nn-params) net)]
+    ;(println "ff-horcat" (shape temp))
+    ;(println "ff-net" (shape net))
     [net output]))
 
 (defn generate-initial-weight-matrix
@@ -45,20 +50,24 @@
         ff-result (feed-forward (:inputs data-set)
                                 weight-matrix
                                 (:bias data-set))
-        ; Pull out the output from the feed forward result
-        output (second ff-result)
+        ; Pull out the outputs from the feed forward result
+        outputs (second ff-result)
         ; Pull out the resulting network from the feed forward.
         net (first ff-result)
         ; Calcuate the error of the network on the data set.
-        error (/ (util/sum-all-2D-matrix-components (Math/pow (- (:outputs data-set)
-                                                                 output)
-                                                              2))
-                 (* (count (:outputs data-set)) (:output-count data-set)))
+        error (/ (util/sum-all-2D-matrix-components (emap square
+                                                            (- (transpose (:outputs data-set))
+                                                               outputs)))
+                   (* (count (:outputs data-set))
+                      (:output-count (:data-sets @nn-params))))
         ; Find the classes of the outputs.
-        classes (util/output->class output)
-        ; User outputs to find the classification error on the data set.
-        classification-error (/ (count (filter true? (map = classes (:classes data-set))))
-                                (count (:outputs data-set)))]
+        classes (map util/output->class (transpose outputs))
+        ; Uses outputs to find the classification error on the data set.
+        classification-error (do
+                               ;(println "Classes:" classes)
+                               ;(println "Target Classes:" (:classes data-set))
+                               (/ (count (filter true? (map = classes (:classes data-set))))
+                                  (count (:outputs data-set))))]
     [error classification-error]))
 
 (defn backpropagation 
@@ -110,7 +119,8 @@
             ; Apply the results of the backpropagation as the new weights
             (backpropagation inputs 
                              weights 
-                             (:learning-rate @nn-params))
+                             (:learning-rate @nn-params)
+                             [])
             ;;;;;;;;;;;;;;;;;;;;;;;;
             ; Append errors to vectors for reporting
             (conj training-error (first training-eval))

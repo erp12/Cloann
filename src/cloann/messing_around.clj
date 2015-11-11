@@ -7,20 +7,11 @@
   (:use clojure.core.matrix.operators))
 
 
-(def W (matrix [[0 1 2]
-                [3 5 4]
-                [8 7 6]]))
+(def M1 (array [2 4 0 1 3]))
 
+(def M2 (array [0 4 1 1 3]))
 
-;; Matrix of all the data from the csv file
-(def data-matrix
-  (dIO/csv->matrix "XOR_no_heading.csv" true))
+(def M3 (array [[0.2 1.5 0.7 2.3 1.1]
+                [1.0 0.3 4.3 2.3 2.3]]
 
-(def ds (dIO/create-data-sets-from-matrix data-matrix
-                                         [0 1] ; Input indexes
-                                         [2]   ; Output indexes
-                                         20   ; Number of observations to take for training
-                                         10   ; Number of observations to take for testing
-                                         10)) ; Number of observations to take for validation
-
-(:count (:training-set ds))
+;(util/horizontal-matrix-concatenation M1 M2)

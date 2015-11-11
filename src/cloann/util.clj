@@ -16,10 +16,9 @@ Taken from: http://stackoverflow.com/questions/4635680/what-is-the-best-way-to-g
 (defn output->class
   "Converts the output matrix of the ANN to a single number per observation,
 corrispoding to that observation's class"
-  [output-matrix]
-  (map (fn [v]
-         (.indexOf v (apply max v)))
-       output-matrix))
+  [output-vector]
+  (let [max-in-vec (apply max output-vector)]
+    (.indexOf output-vector max-in-vec)))
 
 (defn class->output
   "Converts a vector of class numbers, into the desired ANN output matrix"
@@ -36,7 +35,7 @@ corrispoding to that observation's class"
 (defn horizontal-matrix-concatenation
   "Same as horzcat() function from MATLAB."
   [matrix-1 matrix-2]
-  (map join (rows matrix-1) (rows matrix-2)))
+  (array (vec (map join (rows matrix-1) (rows matrix-2)))))
 
 (defn sum-all-2D-matrix-components
   [matrix]
@@ -49,3 +48,9 @@ corrispoding to that observation's class"
 Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elements-from-a-sequence-based-on-indexes"
   (keep-indexed #(when ((set idxs) %1) %2) 
                 coll))
+
+(defn matrix-2d-pretty-print
+  "Prints a 2d matrix in a pretty way. Returns the matrix"
+  [matrix]
+  (map println matrix)
+  matrix)

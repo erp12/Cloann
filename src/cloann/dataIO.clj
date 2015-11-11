@@ -33,7 +33,7 @@
   "Reads a CSV file, parses values into doubles, puts values in a matrix.
 If is-first-row-labels is true, excludes the first row."
   [filename is-first-row-labels]
-  (let [new-matrix (matrix
+  (let [new-matrix (array
                       (with-open [in-file (io/reader (str "data/" filename))]
                         (doall
                           (vec
