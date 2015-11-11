@@ -54,7 +54,7 @@ If is-first-row-labels is true, excludes the first row."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Creating Data Sets
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn create-data-sub-set-from-matrix
+(defn create-data-sub-set-from-sampled-matrix
   "Puts random sub-set of a matrix into a data sub-set map."
   [matrix data-subset-count input-indexes output-indexes classes bias]
   (let [sampled-rows (repeatedly data-subset-count #(rand-nth matrix))
@@ -66,27 +66,59 @@ If is-first-row-labels is true, excludes the first row."
       (assoc :outputs outputs)
       (assoc :classes (map util/output->class outputs)))))
 
-(defn create-data-sets-from-matrix
+(defn create-data-sub-set-from-full-matrix
+  "Puts random sub-set of a matrix into a data sub-set map."
+  [matrix input-indexes output-indexes classes bias]
+  (let [outputs (map #(vec (util/filter-by-index % %2)) matrix (repeat output-indexes))]
+    (-> {}
+      (assoc :count (first (shape matrix)))
+      (assoc :bias (take (first (shape matrix)) bias))
+      (assoc :inputs (map #(vec (util/filter-by-index % %2)) matrix (repeat input-indexes)))
+      (assoc :outputs outputs)
+      (assoc :classes (map util/output->class outputs)))))
+
+(defn create-data-sets-from-1-matrix
   "Creates a data set from one single matrix."
   [matrix input-indexes output-indexes training-count testing-count validation-count]
   (-> empty-data-sets
     (assoc :input-count (count input-indexes))
     (assoc :output-count (count output-indexes))
-    (assoc :training-set (create-data-sub-set-from-matrix matrix
-                                                          training-count
-                                                          input-indexes
-                                                          output-indexes
-                                                          (vec (range (count output-indexes)))
-                                                          (repeat 1)))
-    (assoc :testing-set (create-data-sub-set-from-matrix matrix
-                                                          testing-count
-                                                          input-indexes
-                                                          output-indexes
-                                                          (vec (range (count output-indexes)))
-                                                          (repeat 1)))
-    (assoc :validation-set (create-data-sub-set-from-matrix matrix
-                                                          validation-count
-                                                          input-indexes
-                                                          output-indexes
-                                                          (vec (range (count output-indexes)))
-                                                          (repeat 1)))))
+    (assoc :training-set (create-data-sub-set-from-sampled-matrix matrix
+                                                                  training-count
+                                                                  input-indexes
+                                                                  output-indexes
+                                                                  (vec (range (count output-indexes)))
+                                                                  (repeat 1)))
+    (assoc :testing-set (create-data-sub-set-from-sampled-matrix matrix
+                                                                 testing-count
+                                                                 input-indexes
+                                                                 output-indexes
+                                                                 (vec (range (count output-indexes)))
+                                                                 (repeat 1)))
+    (assoc :validation-set (create-data-sub-set-from-sampled-matrix matrix
+                                                                    validation-count
+                                                                    input-indexes
+                                                                    output-indexes
+                                                                    (vec (range (count output-indexes)))
+                                                                    (repeat 1)))))
+
+(defn create-data-sets-from-3-matrices
+  [training-matrix testing-matrix validation-matrix input-indexes output-indexes]
+  (-> empty-data-sets
+    (assoc :input-count (count input-indexes))
+    (assoc :output-count (count output-indexes))
+    (assoc :training-set (create-data-sub-set-from-full-matrix training-matrix
+                                                               input-indexes
+                                                               output-indexes
+                                                               (vec (range (count output-indexes)))
+                                                               (repeat 1)))
+    (assoc :testing-set (create-data-sub-set-from-full-matrix testing-matrix
+                                                              input-indexes
+                                                              output-indexes
+                                                              (vec (range (count output-indexes)))
+                                                              (repeat 1)))
+    (assoc :validation-set (create-data-sub-set-from-full-matrix validation-matrix
+                                                                 input-indexes
+                                                                 output-indexes
+                                                                 (vec (range (count output-indexes)))
+                                                                 (repeat 1)))))

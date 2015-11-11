@@ -122,7 +122,7 @@
            testing-classification-error []
            validation-error []
            validation-classification-error []]
-      (if (= epoch 500)
+      (if (= epoch 2000)
         (do
           (println "Training finished. Now draw some graphs.")
           (report/plot-nn-evaluations training-error
