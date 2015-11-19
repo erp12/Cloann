@@ -88,19 +88,19 @@ If is-first-row-labels is true, excludes the first row."
                                                                   input-indexes
                                                                   output-indexes
                                                                   (vec (range (count output-indexes)))
-                                                                  (repeat 1)))
+                                                                  (vec (repeat training-count 1))))
     (assoc :testing-set (create-data-sub-set-from-sampled-matrix matrix
                                                                  testing-count
                                                                  input-indexes
                                                                  output-indexes
                                                                  (vec (range (count output-indexes)))
-                                                                 (repeat 1)))
+                                                                 (vec (repeat testing-count 1))))
     (assoc :validation-set (create-data-sub-set-from-sampled-matrix matrix
                                                                     validation-count
                                                                     input-indexes
                                                                     output-indexes
                                                                     (vec (range (count output-indexes)))
-                                                                    (repeat 1)))))
+                                                                    (vec (repeat validation-count 1))))))
 
 (defn create-data-sets-from-3-matrices
   [training-matrix testing-matrix validation-matrix input-indexes output-indexes]

@@ -11,7 +11,9 @@
   "Returns date and time.
 Taken from: http://stackoverflow.com/questions/4635680/what-is-the-best-way-to-get-date-and-time-in-clojure"
   []
-  (new java.util.Date))
+  (clojure.string/replace (str (new java.util.Date))
+                          ":"
+                          "_"))
 
 (defn output->class
   "Converts the output matrix of the ANN to a single number per observation,
