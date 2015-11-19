@@ -11,21 +11,25 @@
   (atom 
     {:activation-func act-funcs/hyperbolic-tangent
      :activation-func-derivative act-funcs/hyperbolic-tangent-derivative
-     :max-weight 1
+     :max-weight-initial 1
      :data-set nil
      :sample-limit 10
      :plot-graphs true
-     :learning-rate 0.1}))
+     :learning-rate 0.005
+     :max-epochs 1000
+     :debug-prints false
+     :target-error-threshold 0.05}))
 
 (defn feed-forward
   "Computes the output of the neural network given the inputs and the weights."
   [inputs weight-matrix bias-node-matrix]
-
   (let [temp (util/horizontal-matrix-concatenation inputs bias-node-matrix)
         net (inner-product temp 
                            weight-matrix)
-        output (emap (:activation-func @nn-params) net)]
-    [net output]))
+        outputs (emap (:activation-func @nn-params) net)]
+    (println "Inputs" inputs)
+    (println "Outputs" outputs)
+    [net outputs]))
 
 (defn generate-initial-weight-matrix
   "Generates matrix of weights between max-weight and negative max-weight"
@@ -63,8 +67,18 @@
         classification-error (do
                                ;(println "Classes:" classes)
                                ;(println "Target Classes:" (:classes data-set))
-                               (/ (count (filter true? (map = classes (:classes data-set))))
+                               (/ (count (filter true? (map not= classes (:classes data-set))))
                                   (count (:outputs data-set))))]
+    (if (:debug-prints @nn-params)
+      (do
+        (println "Evaluation Of Network")
+        (println "w" weight-matrix)
+        (println outputs)
+        (println net)
+        (println error)
+        (println classes)
+        (println classification-error)
+        (println)))
     [error classification-error]))
 
 (defn backpropagation 
@@ -76,11 +90,11 @@
         ff-result (feed-forward [(nth inputs-matrix rand-sample-index)]
                                 weight-matrix
                                 bias-vector)
-        output (second ff-result)
+        outputs (second ff-result)
         net (first ff-result)
         ; Take vector of how far off feed foward was
         error-vector (- (transpose (nth outputs-matrix rand-sample-index))
-                        output)
+                        outputs)
         ; How should the weight change
         delta (emap *
                     error-vector
@@ -96,12 +110,22 @@
         new-weights (emap + weight-matrix 
                           (reshape weights-delta 
                                    (shape weight-matrix)))]
+    (if (:debug-prints @nn-params)
+      (do
+        (println "Backpropagation" )
+        (println "w" weight-matrix)
+        (println outputs)
+        (println net)
+        (println error-vector)
+        (println weights-delta)
+        (println new-weights)
+        (println)))
     new-weights))
 
 (defn train-nn
   [data-sets]
   (let [; Inital randomized weights to the network
-        init-weight-matrix (generate-initial-weight-matrix 1
+        init-weight-matrix (generate-initial-weight-matrix (:max-weight-initial @nn-params)
                                                            (inc (:input-count data-sets))
                                                            (:output-count data-sets))
         ; Bias vectors for the various data-sets
@@ -122,7 +146,10 @@
            testing-classification-error []
            validation-error []
            validation-classification-error []]
-      (if (= epoch 2000)
+      (if (or (= epoch (:max-epochs @nn-params))
+              (if (not (empty? validation-error))
+                (< (last validation-error) (:target-error-threshold @nn-params))
+                false)) 
         (do
           (println "Training finished. Now draw some graphs.")
           (report/plot-nn-evaluations training-error
@@ -134,7 +161,7 @@
         (let [training-eval (evaluate-network (:training-set data-sets) weights training-bias)
               testing-eval (evaluate-network (:testing-set data-sets) weights testing-bias)
               validation-eval (evaluate-network (:validation-set data-sets) weights validation-bias)]
-          (println "Epoch:" epoch)
+          (println "Starting Epoch" (inc epoch))
           (recur 
             ; Increment the epoch number
             (inc epoch)

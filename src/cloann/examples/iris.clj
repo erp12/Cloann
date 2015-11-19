@@ -24,6 +24,9 @@
                                                     testing-data-matrix
                                                     validation-data-matrix
                                                     [0 1 2 3] ; Input indexes
-                                                    [4 5 6])}); Output indexes
+                                                    [4 5 6]) ; Output indexes
+   :max-epochs 1000
+   :max-weight-intial 0.5
+   :learning-rate 0.01})
 
 ;(cloann/run-cloann nn-params)
