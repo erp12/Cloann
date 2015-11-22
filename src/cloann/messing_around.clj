@@ -33,4 +33,4 @@
                            [2]
                            [1]])})
 
-(util/matrix-2d-pretty-print (:inputs foo))
+(util/data-set-pretty-print foo)

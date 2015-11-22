@@ -65,10 +65,14 @@ Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elem
   [data-set]
   (println "Counts:" (:count data-set))
   (println "Inputs:")
-  (map println (:inputs data-set))
+  (doseq [row (:inputs data-set)]
+    (println row))
   (println "Outputs:")
-  (map println (:outputs data-set))
+  (doseq [row (:outputs data-set)]
+    (println row))
   (println "classes:")
-  (map println (:classes data-set))
+  (doseq [row (:classes data-set)]
+    (println row))
   (println "Bias:")
-  (map println (:bias data-set)))
+  (doseq [row (:bias data-set)]
+    (println row )))
