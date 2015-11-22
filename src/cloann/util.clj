@@ -40,7 +40,7 @@ corrispoding to that observation's class"
   ;(println matrix-1)
   ;(println matrix-2)
   ;(println "")
-  (array (vec (map join (rows matrix-1) (rows matrix-2)))))
+  (array (vec (map concat (rows matrix-1) (rows matrix-2)))))
 
 (defn sum-all-2D-matrix-components
   [matrix]
@@ -55,7 +55,20 @@ Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elem
                 coll))
 
 (defn matrix-2d-pretty-print
-  "Prints a 2d matrix in a pretty way. Returns the matrix"
+  "Prints a 2d matrix in a pretty way. Returns nil"
   [matrix]
-  (map println matrix)
-  matrix)
+  (map #(println %) matrix)
+  nil)
+
+(defn data-set-pretty-print
+  "Prints a data-set in a pretty way"
+  [data-set]
+  (println "Counts:" (:count data-set))
+  (println "Inputs:")
+  (map println (:inputs data-set))
+  (println "Outputs:")
+  (map println (:outputs data-set))
+  (println "classes:")
+  (map println (:classes data-set))
+  (println "Bias:")
+  (map println (:bias data-set)))
