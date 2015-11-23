@@ -18,7 +18,7 @@
      :learning-rate 0.01
      :max-epochs 1000
      :debug-prints false
-     :target-error-threshold 0.05}))
+     :validation-stop-threshold 0.1}))
 
 (defn feed-forward
   "Computes the output of the neural network given the inputs and the weights."
@@ -84,6 +84,7 @@
   [inputs-matrix outputs-matrix weight-matrix learning-rate bias-vector]
   (let [; Pick random sample 
         rand-sample-index (rand-int (:input-count (:data-sets @nn-params)))
+        ;;;;;rand-sample-index 0
         ; Feed sample through network
         ff-result (feed-forward [(nth inputs-matrix rand-sample-index)]
                                 weight-matrix
@@ -120,6 +121,39 @@
         (println)))
     new-weights))
 
+;(def temp-ws 
+;  [[-0.478326  -0.423382  -0.083957]
+;   [-0.458601  -0.486521   0.390219]
+;   [-0.249674  -0.319713   0.089447]
+;   [-0.425611   0.206993   0.367458]
+;   [0.403078   0.053084   0.128577]])
+;(def foo {:count 5
+;          :bias (array [[1]
+;                        [1]
+;                        [1]
+;                        [1]
+;                        [1]])
+;          :inputs (array [[0.282131   0.269205   0.430645   0.427485]
+;                          [0.582374   0.445654   0.581855   0.536988]
+;                          [0.466896   0.480944   0.566734   0.500487]
+;                          [0.744044   0.516233   0.672581   0.609990]
+;                          [0.212844   0.516233   0.158468   0.135476]])
+;          :outputs (array [[0 1 0]
+;                           [0 1 0]
+;                           [0 1 0]
+;                           [0 1 0]
+;                           [1 0 0]])
+;          :classes (array [[2]
+;                           [2]
+;                           [2]
+;                           [2]
+;                           [1]])})
+;(util/matrix-2d-pretty-print (backpropagation (:inputs foo)
+;                                              (:outputs foo)
+;                                              temp-ws
+;                                              0.05
+;                                              (:bias foo)))
+
 (defn train-nn
   [data-sets]
   (let [; Inital randomized weights to the network
@@ -142,7 +176,7 @@
            validation-classification-error []]
       (if (or (= epoch (:max-epochs @nn-params))
               (if (not (empty? validation-error))
-                (< (last validation-error) (:target-error-threshold @nn-params))
+                (< (last validation-error) (:validation-stop-threshold @nn-params))
                 false))
         (do
           (println "Training finished. Now draw some graphs.")
