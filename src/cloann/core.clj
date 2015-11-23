@@ -17,7 +17,7 @@
      :plot-graphs true
      :learning-rate 0.01
      :max-epochs 1000
-     :debug-prints true
+     :debug-prints false
      :target-error-threshold 0.05}))
 
 (defn feed-forward
@@ -64,52 +64,20 @@
         ; Find the classes of the outputs.
         classes (vec (map util/output->class outputs))
         ; Uses outputs to find the classification error on the data set.
-        classification-error (do
-                               ;(println "Classes:" classes)
-                               ;(println "Target Classes:" (:classes data-set))f
-                               (/ (count (filter true? (emap not= classes (flatten (:classes data-set)))))
-                                  (count (:outputs data-set))))]
+        classification-error (/ (count (filter true? (emap not= classes (flatten (:classes data-set)))))
+                                  (count (:outputs data-set)))]
     (if (:debug-prints @nn-params)
       (do
         (println "Evaluation Of Network")
-        ;(println "weights" (util/matrix-2d-pretty-print weight-matrix))
         (println "Outputs")
         (util/matrix-2d-pretty-print outputs)
         (println "Net")
         (util/matrix-2d-pretty-print net)
         (println "Regression Error" regression-error)
+        (println "Classes" classes)
         (println "classification-error" classification-error)
         (println)))
     [regression-error classification-error]))
-
-(def temp-ws 
-  [[-0.478326  -0.423382  -0.083957]
-   [-0.458601  -0.486521   0.390219]
-   [-0.249674  -0.319713   0.089447]
-   [-0.425611   0.206993   0.367458]
-   [0.403078   0.053084   0.128577]])
-(def foo {:count 5
-          :bias (array [[1]
-                        [1]
-                        [1]
-                        [1]
-                        [1]])
-          :inputs (array [[0.282131   0.269205   0.430645   0.427485]
-                          [0.582374   0.445654   0.581855   0.536988]
-                          [0.466896   0.480944   0.566734   0.500487]
-                          [0.744044   0.516233   0.672581   0.609990]
-                          [0.212844   0.516233   0.158468   0.135476]])
-          :outputs (array [[0 1 0]
-                           [0 1 0]
-                           [0 1 0]
-                           [0 1 0]
-                           [1 0 0]])
-          :classes (array [[2]
-                           [2]
-                           [2]
-                           [2]
-                           [1]])})
-;(evaluate-network foo temp-ws)
 
 (defn backpropagation 
   "I don't do anything right now. Come back later."

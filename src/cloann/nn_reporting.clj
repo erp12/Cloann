@@ -8,10 +8,9 @@
   "Saves line plots of all 6 types of errors over each epoch."
   [training-error training-classification-error testing-error testing-classification-error validation-error validation-classification-error]
   (let [dateString (str (util/get-date-time-string))
-        dir (str "charts/" dateString)
+        dir (str "charts/")
         x-vals (vec (range (count training-error)))]
     (.mkdir (java.io.File. "charts/"))
-    (.mkdir (java.io.File. (str "charts/" dateString)))
     (-> 
       (scatter-plot x-vals
                     training-error
@@ -35,6 +34,6 @@
       (add-points x-vals
                   validation-classification-error
                   :series-label "Validation Classification Error")
-      (save (str dir "/training_report.png")
+      (save (str dir dateString ".png")
             :width 1280
             :height 720))))
