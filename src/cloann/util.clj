@@ -67,6 +67,7 @@ Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elem
   (println "Inputs:")
   (doseq [row (:inputs data-set)]
     (println row))
+  ;(doall (map println (:inputs data-set)))
   (println "Outputs:")
   (doseq [row (:outputs data-set)]
     (println row))

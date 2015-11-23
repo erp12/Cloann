@@ -34,13 +34,13 @@
 If is-first-row-labels is true, excludes the first row."
   [filename is-first-row-labels]
   (let [new-matrix (array
-                      (with-open [in-file (io/reader filename)]
-                        (doall
-                          (vec
-                            (->> (csv/read-csv in-file)
-                              (map (fn [line]
-                                     (vec 
-                                       (map string->number line)))))))))]
+                     (with-open [in-file (io/reader filename)]
+                       (doall
+                         (vec
+                           (->> (csv/read-csv in-file)
+                             (map (fn [line]
+                                    (vec 
+                                      (map string->number line)))))))))]
     (if is-first-row-labels 
       (rest new-matrix)
       new-matrix)))
@@ -61,10 +61,10 @@ If is-first-row-labels is true, excludes the first row."
         outputs (map #(vec (util/filter-by-index % %2)) sampled-rows (repeat output-indexes))]
     (-> {}
       (assoc :count data-subset-count)
-      (assoc :bias (take data-subset-count bias))
-      (assoc :inputs (map #(vec (util/filter-by-index % %2)) sampled-rows (repeat input-indexes)))
-      (assoc :outputs outputs)
-      (assoc :classes (map util/output->class outputs)))))
+      (assoc :bias (array (map vector (vec (take data-subset-count bias)))))
+      (assoc :inputs (array (vec (map #(vec (util/filter-by-index % %2)) sampled-rows (repeat input-indexes)))))
+      (assoc :outputs (array (vec outputs)))
+      (assoc :classes (array (map vector (vec (map util/output->class outputs))))))))
 
 (defn create-data-sub-set-from-full-matrix
   "Puts random sub-set of a matrix into a data sub-set map."
@@ -72,10 +72,13 @@ If is-first-row-labels is true, excludes the first row."
   (let [outputs (map #(vec (util/filter-by-index % %2)) matrix (repeat output-indexes))]
     (-> {}
       (assoc :count (first (shape matrix)))
-      (assoc :bias (take (first (shape matrix)) bias))
-      (assoc :inputs (map #(vec (util/filter-by-index % %2)) matrix (repeat input-indexes)))
-      (assoc :outputs outputs)
-      (assoc :classes (map util/output->class outputs)))))
+      (assoc :bias (array (map vector 
+                               (vec (take (first (shape matrix)) bias)))))
+      (assoc :inputs (array (vec (map #(vec (util/filter-by-index % %2)) 
+                                      matrix 
+                                      (repeat input-indexes)))))
+      (assoc :outputs (vec outputs))
+      (assoc :classes (array (map vector (vec (map util/output->class outputs))))))))
 
 (defn create-data-sets-from-1-matrix
   "Creates a data set from one single matrix."

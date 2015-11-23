@@ -82,27 +82,6 @@
         (println)))
     [error classification-error]))
 
-;(def temp-dataset {:inputs (array [[0 0]
-;                                   [0 1]
-;                                   [1 0]
-;                                   [1 1]])
-;                   :outputs (array [[0 1]
-;                                    [1 0]
-;                                    [1 0]
-;                                    [0 1]])
-;                   :classes (array [[0]
-;                                    [1]
-;                                    [1]
-;                                    [0]])
-;                   :bias (array [[1]
-;                                 [1]
-;                                 [1]
-;                                 [1]])})
-;(println "Evalutate Network" (evaluate-network temp-dataset
-;                                               (array [[-0.045616853173512606 0.0225004092005332] 
-;                                                       [0.9459784029564748 -0.24855064565722018] 
-;                                                       [-0.19208135545725846 0.6748231650787728]])))
-
 (defn backpropagation 
   "I don't do anything right now. Come back later."
   [inputs-matrix outputs-matrix weight-matrix learning-rate bias-vector]
@@ -122,8 +101,8 @@
                     error-vector
                     (emap (:activation-func-derivative @nn-params) net))
         ; Put in temp for code readability
-        temp (transpose (conj (nth inputs-matrix rand-sample-index)
-                              (nth bias-vector rand-sample-index)))
+        temp (concat (nth inputs-matrix rand-sample-index)
+                     (nth bias-vector rand-sample-index))
         ; How much should the weights change
         weights-delta (* learning-rate
                          (outer-product temp
