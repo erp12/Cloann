@@ -21,7 +21,7 @@
                                                     [4 5 6]) ; Output indexes
    :max-epochs 500
    :max-weight-intial 0.5
-   :learning-rate 0.01})
+   :learning-rate 0.05})
 
 (cloann/run-cloann nn-params)
 

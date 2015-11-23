@@ -20,7 +20,7 @@ Taken from: http://stackoverflow.com/questions/4635680/what-is-the-best-way-to-g
 corrispoding to that observation's class"
   [output-vector]
   (let [max-in-vec (apply max output-vector)]
-    (.indexOf output-vector max-in-vec)))
+    (inc (.indexOf output-vector max-in-vec))))
 
 (defn class->output
   "Converts a vector of class numbers, into the desired ANN output matrix"
@@ -30,7 +30,7 @@ corrispoding to that observation's class"
       (vec
         (map (fn [class-num]
                (assoc (vec (take (inc vector-len) (repeat 0)))
-                      class-num
+                      (dec class-num)
                       1))
              class-num-vec))))
 
@@ -57,7 +57,7 @@ Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elem
 (defn matrix-2d-pretty-print
   "Prints a 2d matrix in a pretty way. Returns nil"
   [matrix]
-  (map #(println %) matrix)
+  (doall (map #(println %) matrix))
   nil)
 
 (defn data-set-pretty-print

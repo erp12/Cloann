@@ -5,15 +5,12 @@
             [cloann.dataIO :as dIO]
             [incanter.core :as incntr]
             [incanter.charts :as charts])
-  ;(:use clojure.core.matrix)
-  ;(:use clojure.core.matrix.operators)
-  ;(:use [incanter core charts])
-  )
+  (:use clojure.core.matrix)
+  (:use clojure.core.matrix.operators))
 
 
-(def M1 (array [[1 2] 
-                [3 2]]))
-
+(def M1 (array [[1 2 3 4] 
+                [3 2 5 7]]))
 
 (def foo {:count 5
           :bias (array [[1]

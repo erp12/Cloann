@@ -37,4 +37,4 @@
                   :series-label "Validation Classification Error")
       (save (str dir "/training_report.png")
             :width 1280
-            :height 720)))))
+            :height 720))))
