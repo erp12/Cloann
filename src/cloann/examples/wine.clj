@@ -22,10 +22,6 @@
    :validation-stop-threshold 0.1
    :num-hidden-nodes 4})
 
-<<<<<<< HEAD
 (cloann/run-cloann nn-params)
-=======
-;(cloann/run-cloann nn-params)
->>>>>>> master
 
 ;(util/data-set-pretty-print (:testing-set (:data-sets nn-params)))
