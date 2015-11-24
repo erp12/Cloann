@@ -8,9 +8,9 @@
   "Saves line plots of all 6 types of errors over each epoch."
   [training-error training-classification-error testing-error testing-classification-error validation-error validation-classification-error]
   (let [dateString (str (util/get-date-time-string))
-        dir (str "charts/")
+        dir (str "nn_reporting/")
         x-vals (vec (range (count training-error)))]
-    (.mkdir (java.io.File. "charts/"))
+    (.mkdir (java.io.File. "nn_reporting/"))
     (-> 
       (xy-plot x-vals
                     training-error
