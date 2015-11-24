@@ -13,12 +13,12 @@
     (.mkdir (java.io.File. "nn_reporting/"))
     (-> 
       (xy-plot x-vals
-                    training-error
-                    :title "Errors"
-                    :x-label "Epoch"
-                    :y-label "Error"
-                    :legend true
-                    :series-label "Training Error")
+               training-error
+               :title "Errors"
+               :x-label "Epoch"
+               :y-label "Error"
+               :legend true
+               :series-label "Training Error")
       (add-lines x-vals
                   training-classification-error
                   :series-label "Training Classification Error")
