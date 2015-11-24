@@ -39,11 +39,11 @@
  
 (doto
   (charts/scatter-plot [0 1 2 3 4 5]
-                     [1.2 3.4 5.4 3.2 1.5 2.6]
-                     :title "Errors"
-                     :x-label "Epoch"
-                     :y-label "Error"
-                     :legend true)
+                       [1.2 3.4 5.4 3.2 1.5 2.6]
+                       :title "Errors"
+                       :x-label "Epoch"
+                       :y-label "Error"
+                       :legend true)
   (charts/add-points [0 1 2 3 4 5]
                      [0.2 2.4 1.4 2.2 1.5 0.6])
   incntr/view)

@@ -27,8 +27,6 @@
         net (inner-product temp 
                            weight-matrix)
         outputs (emap (:activation-func @nn-params) net)]
-    ;(println "Inputs" inputs)
-    ;(println "Outputs" outputs)
     [outputs net]))
 
 (defn generate-initial-weight-matrix
@@ -80,11 +78,10 @@
     [regression-error classification-error]))
 
 (defn backpropagation 
-  "I don't do anything right now. Come back later."
+  "Returns the new weights for the network after 1 step of back propagation."
   [inputs-matrix outputs-matrix weight-matrix learning-rate bias-vector]
   (let [; Pick random sample 
-        rand-sample-index (rand-int (:input-count (:data-sets @nn-params)))
-        ;;;;;rand-sample-index 0
+        rand-sample-index (rand-int (count inputs-matrix))
         ; Feed sample through network
         ff-result (feed-forward [(nth inputs-matrix rand-sample-index)]
                                 weight-matrix
@@ -92,7 +89,7 @@
         output (first ff-result)
         net (second ff-result)
         ; Take vector of how far off feed foward was
-        error-vector (- (transpose (nth outputs-matrix rand-sample-index))
+        error-vector (- (nth outputs-matrix rand-sample-index)
                         output)
         ; How should the weight change
         delta (emap *
@@ -112,58 +109,32 @@
     (if (:debug-prints @nn-params)
       (do
         (println "Backpropagation" )
-        (println "w" weight-matrix)
-        (println output)
-        (println net)
-        (println error-vector)
-        (println weights-delta)
-        (println new-weights)
+        (println "Old Weights:")
+        (util/matrix-2d-pretty-print weight-matrix)
+        (println "Outputs")
+        (util/matrix-2d-pretty-print output)
+        (println "Net")
+        (util/matrix-2d-pretty-print net)
+        (println "Error Vector" error-vector)
+        (println "Weights Delta")
+        (util/matrix-2d-pretty-print weights-delta)
+        (println "New Weights")
+        (util/matrix-2d-pretty-print new-weights)
         (println)))
     new-weights))
-
-;(def temp-ws 
-;  [[-0.478326  -0.423382  -0.083957]
-;   [-0.458601  -0.486521   0.390219]
-;   [-0.249674  -0.319713   0.089447]
-;   [-0.425611   0.206993   0.367458]
-;   [0.403078   0.053084   0.128577]])
-;(def foo {:count 5
-;          :bias (array [[1]
-;                        [1]
-;                        [1]
-;                        [1]
-;                        [1]])
-;          :inputs (array [[0.282131   0.269205   0.430645   0.427485]
-;                          [0.582374   0.445654   0.581855   0.536988]
-;                          [0.466896   0.480944   0.566734   0.500487]
-;                          [0.744044   0.516233   0.672581   0.609990]
-;                          [0.212844   0.516233   0.158468   0.135476]])
-;          :outputs (array [[0 1 0]
-;                           [0 1 0]
-;                           [0 1 0]
-;                           [0 1 0]
-;                           [1 0 0]])
-;          :classes (array [[2]
-;                           [2]
-;                           [2]
-;                           [2]
-;                           [1]])})
-;(util/matrix-2d-pretty-print (backpropagation (:inputs foo)
-;                                              (:outputs foo)
-;                                              temp-ws
-;                                              0.05
-;                                              (:bias foo)))
 
 (defn train-nn
   [data-sets]
   (let [; Inital randomized weights to the network
         init-weight-matrix (generate-initial-weight-matrix (:max-weight-initial @nn-params)
                                                            (inc (:input-count data-sets))
-                                                           (:output-count data-sets))]
+                                                           (:output-count data-sets))
+        ; inputs to the network
+        inputs (:inputs (:training-set data-sets))
+        outputs (:outputs (:training-set data-sets))
+        bias (:bias (:training-set data-sets))]
     (loop [; nn's training epoch
            epoch 0
-           ; inputs to the network
-           inputs (:inputs (:training-set data-sets))
            ; current set of weights for the network
            weights init-weight-matrix
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -193,14 +164,12 @@
           (recur 
             ; Increment the epoch number
             (inc epoch)
-            ; Inputs stay the same
-            inputs
             ; Apply the results of the backpropagation as the new weights
             (backpropagation inputs
-                             (:outputs (:training-set data-sets))
+                             outputs
                              weights 
                              (:learning-rate @nn-params)
-                             (:bias (:training-set data-sets)))
+                             bias)
             ;;;;;;;;;;;;;;;;;;;;;;;;
             ; Append errors to vectors for reporting
             (conj training-error (first training-eval))
