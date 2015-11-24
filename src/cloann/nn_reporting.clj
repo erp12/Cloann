@@ -12,26 +12,26 @@
         x-vals (vec (range (count training-error)))]
     (.mkdir (java.io.File. "charts/"))
     (-> 
-      (scatter-plot x-vals
+      (xy-plot x-vals
                     training-error
                     :title "Errors"
                     :x-label "Epoch"
                     :y-label "Error"
                     :legend true
                     :series-label "Training Error")
-      (add-points x-vals
+      (add-lines x-vals
                   training-classification-error
                   :series-label "Training Classification Error")
-      (add-points x-vals
+      (add-lines x-vals
                   testing-error
                   :series-label "Testing Error")
-      (add-points x-vals
+      (add-lines x-vals
                   testing-classification-error
                   :series-label "Testing Classification Error")
-      (add-points x-vals
+      (add-lines x-vals
                   validation-error
                   :series-label "Validation Error")
-      (add-points x-vals
+      (add-lines x-vals
                   validation-classification-error
                   :series-label "Validation Classification Error")
       (save (str dir dateString ".png")
