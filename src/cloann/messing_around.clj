@@ -9,41 +9,52 @@
   (:use clojure.core.matrix.operators))
 
 
-(def M1 (array [[1 2 3 4] 
-                [3 2 5 7]]))
+(defn generate-initial-weight-matrix
+  "Generates matrix of weights between max-weight and negative max-weight"
+  [max-weight num-inputs num-outputs num-hidden]
+  ; Save the size of the weight matrix
+  (let [weight-matrix-width (+ num-inputs
+                               num-outputs
+                               num-hidden)]
+    ; Start with an empty matrix, and populate from there.
+    (loop [weight-matrix [[]]]
+      ; if the weight-matrix does not have enough rows
+      (if (< (count weight-matrix) 
+             weight-matrix-width)
+        ; if the last row of the matrix does not have all its columns
+        (if (< (count (last weight-matrix)) 
+               weight-matrix-width)
+          ; recur the loop with a new weight added to the end of the last row
+          (recur (assoc-in weight-matrix
+                           [(dec (count weight-matrix)) (count (last weight-matrix))]
+                           ; if either the row or the column are not related to an input...
+                           (if (or (> (count weight-matrix)
+                                      num-inputs)
+                                   (> (inc (count (last weight-matrix)))
+                                      num-inputs))
+                             ; generate a random weight
+                             (- (rand (* max-weight 2))
+                              max-weight)
+                             ; otherwise, no connection
+                             nil)))
+          ; (if last row has alll its weights) append a new row on to the matrix
+          (recur (conj weight-matrix [])))
+        ; (if the weight matrix has enough rows) and if the last row does not have all its weights yet.
+        (if (< (count (last weight-matrix)) 
+               weight-matrix-width)
+          ; recur the loop with a new weight added to the end of the last row
+          (recur (assoc-in weight-matrix
+                           [(dec (count weight-matrix)) (count (last weight-matrix))]
+                           ; if either the row or the column are not related to an input (should only be true here with 0 hidden nodes)
+                           (if (or (> (count weight-matrix) 
+                                      num-inputs)
+                                   (> (inc (count (last weight-matrix)))
+                                      num-inputs))
+                             ; generate a random weight
+                             (- (rand (* max-weight 2))
+                              max-weight)
+                             ; otherwise, no connection
+                             nil)))
+          weight-matrix)))))
 
-(def foo {:count 5
-          :bias (array [[1]
-                        [1]
-                        [1]
-                        [1]
-                        [1]])
-          :inputs (array [[0.282131   0.269205   0.430645   0.427485]
-                          [0.582374   0.445654   0.581855   0.536988]
-                          [0.466896   0.480944   0.566734   0.500487]
-                          [0.744044   0.516233   0.672581   0.609990]
-                          [0.212844   0.516233   0.158468   0.135476]])
-          :outputs (array [[0 1 0]
-                           [0 1 0]
-                           [0 1 0]
-                           [0 1 0]
-                           [1 0 0]])
-          :classes (array [[2]
-                           [2]
-                           [2]
-                           [2]
-                           [1]])})
-
-(util/data-set-pretty-print foo)
-
- 
-(doto
-  (charts/scatter-plot [0 1 2 3 4 5]
-                       [1.2 3.4 5.4 3.2 1.5 2.6]
-                       :title "Errors"
-                       :x-label "Epoch"
-                       :y-label "Error"
-                       :legend true)
-  (charts/add-points [0 1 2 3 4 5]
-                     [0.2 2.4 1.4 2.2 1.5 0.6])
-  incntr/view)
+(util/matrix-2d-pretty-print (generate-initial-weight-matrix 0.5 3 2 0))

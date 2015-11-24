@@ -22,7 +22,8 @@
    :max-epochs 500
    :max-weight-intial 0.5
    :learning-rate 0.1
-   :validation-stop-threshold 0.1})
+   :validation-stop-threshold 0.1
+   :num-hidden-nodes 4})
 
 (cloann/run-cloann nn-params)
 

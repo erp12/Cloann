@@ -18,29 +18,70 @@
      :learning-rate 0.01
      :max-epochs 1000
      :debug-prints false
-     :validation-stop-threshold 0.1}))
+     :validation-stop-threshold 0.1
+     :num-hidden-nodes 0}))
 
 (defn feed-forward
   "Computes the output of the neural network given the inputs and the weights."
   [inputs weight-matrix bias-node-matrix]
   (let [temp (util/horizontal-matrix-concatenation inputs bias-node-matrix)
         net (inner-product temp 
-                           weight-matrix)
-        outputs (emap (:activation-func @nn-params) net)]
+                           (util/replace-nils-with-zeros weight-matrix))
+        outputs (util/take-colums-of-2d-matrix (util/emap-skip-nil (:activation-func @nn-params) 
+                                                                   net)
+                                               (:input-count (:data-sets @nn-params))
+                                               (+ (:input-count (:data-sets @nn-params))
+                                                  (:output-count (:data-sets @nn-params))))]
     [outputs net]))
+
 
 (defn generate-initial-weight-matrix
   "Generates matrix of weights between max-weight and negative max-weight"
-  [max-weight num-rows num-cols]
-  (array
-    (vec
-      (repeatedly num-rows
-                  (fn []
-                    (vec
-                      (repeatedly num-cols
-                                  (fn []
-                                    (- (rand (* max-weight 2))
-                                       max-weight)))))))))
+  [max-weight num-inputs num-outputs num-hidden]
+  ; Save the size of the weight matrix
+  (let [weight-matrix-width (+ num-inputs
+                               num-outputs
+                               num-hidden)]
+    ; Start with an empty matrix, and populate from there.
+    (loop [weight-matrix [[]]]
+      ; if the weight-matrix does not have enough rows
+      (if (< (count weight-matrix) 
+             weight-matrix-width)
+        ; if the last row of the matrix does not have all its columns
+        (if (< (count (last weight-matrix)) 
+               weight-matrix-width)
+          ; recur the loop with a new weight added to the end of the last row
+          (recur (assoc-in weight-matrix
+                           [(dec (count weight-matrix)) (count (last weight-matrix))]
+                           ; if either the row or the column are not related to an input...
+                           (if (or (> (count weight-matrix)
+                                      num-inputs)
+                                   (> (inc (count (last weight-matrix)))
+                                      num-inputs))
+                             ; generate a random weight
+                             (- (rand (* max-weight 2))
+                              max-weight)
+                             ; otherwise, no connection
+                             nil)))
+          ; (if last row has alll its weights) append a new row on to the matrix
+          (recur (conj weight-matrix [])))
+        ; (if the weight matrix has enough rows) and if the last row does not have all its weights yet.
+        (if (< (count (last weight-matrix)) 
+               weight-matrix-width)
+          ; recur the loop with a new weight added to the end of the last row
+          (recur (assoc-in weight-matrix
+                           [(dec (count weight-matrix)) (count (last weight-matrix))]
+                           ; if either the row or the column are not related to an input (should only be true here with 0 hidden nodes)
+                           (if (or (> (count weight-matrix) 
+                                      num-inputs)
+                                   (> (inc (count (last weight-matrix)))
+                                      num-inputs))
+                             ; generate a random weight
+                             (- (rand (* max-weight 2))
+                              max-weight)
+                             ; otherwise, no connection
+                             nil)))
+          weight-matrix)))))
 
 (defn evaluate-network
   "Returns the error, and classification error of the network on a particular data-set"
@@ -54,16 +95,18 @@
         ; Pull out the resulting network from the feed forward.
         net (second ff-result)
         ; Calcuate the error of the network on the data set.
-        regression-error (/ (util/sum-all-2D-matrix-components (emap square
-                                                                     (- outputs
-                                                                        (:outputs data-set))))
+        regression-error (/ (util/sum-all-2D-matrix-components (util/emap-skip-nil square
+                                                                                   (- outputs
+                                                                                      (:outputs data-set))))
                             (* (:count data-set)
                                (count (first weight-matrix))))
         ; Find the classes of the outputs.
         classes (vec (map util/output->class outputs))
         ; Uses outputs to find the classification error on the data set.
-        classification-error (/ (count (filter true? (emap not= classes (flatten (:classes data-set)))))
-                                  (count (:outputs data-set)))]
+        classification-error (/ (count (filter true? (util/emap-skip-nil not= 
+                                                                         classes
+                                                                         (flatten (:classes data-set)))))
+                                (count (:outputs data-set)))]
     (if (:debug-prints @nn-params)
       (do
         (println "Evaluation Of Network")
@@ -92,20 +135,21 @@
         error-vector (- (nth outputs-matrix rand-sample-index)
                         output)
         ; How should the weight change
-        delta (emap *
-                    error-vector
-                    (emap (:activation-func-derivative @nn-params) net))
+        delta (util/emap-skip-nil *
+                                  error-vector
+                                  (util/emap-skip-nil (:activation-func-derivative @nn-params) 
+                                                      net))
         ; Put in temp for code readability
         temp (concat (nth inputs-matrix rand-sample-index)
                      (nth bias-vector rand-sample-index))
         ; How much should the weights change
         weights-delta (* learning-rate
                          (outer-product temp
-                                        delta))
+                                        (util/replace-nils-with-zeros delta)))
         ; What should the new weights be
-        new-weights (emap + weight-matrix 
-                          (reshape weights-delta 
-                                   (shape weight-matrix)))]
+        new-weights (util/emap-skip-nil + weight-matrix 
+                                        (reshape weights-delta 
+                                                 (shape weight-matrix)))]
     (if (:debug-prints @nn-params)
       (do
         (println "Backpropagation" )
@@ -127,8 +171,9 @@
   [data-sets]
   (let [; Inital randomized weights to the network
         init-weight-matrix (generate-initial-weight-matrix (:max-weight-initial @nn-params)
-                                                           (inc (:input-count data-sets))
-                                                           (:output-count data-sets))
+                                                           (:input-count data-sets)
+                                                           (:output-count data-sets)
+                                                           (:num-hidden-nodes @nn-params))
         ; inputs to the network
         inputs (:inputs (:training-set data-sets))
         outputs (:outputs (:training-set data-sets))
@@ -146,11 +191,18 @@
            validation-error []
            validation-classification-error []]
       (if (or (= epoch (:max-epochs @nn-params))
-              (if (not (empty? validation-error))
-                (< (last validation-error) (:validation-stop-threshold @nn-params))
+              (if (and (not (empty? validation-error))
+                       (< (last validation-error) 
+                          (:validation-stop-threshold @nn-params)))
                 false))
         (do
           (println "Training finished. Now draw some graphs.")
+          (if (= epoch (:max-epochs @nn-params))
+            (println "Max epochs reached."))
+          (if (and (not (empty? validation-error))
+                       (< (last validation-error) 
+                          (:validation-stop-threshold @nn-params)))
+            (println "Validation stop threshold reached."))
           (report/plot-nn-evaluations training-error
                                       training-classification-error
                                       testing-error

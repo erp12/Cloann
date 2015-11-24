@@ -27,12 +27,12 @@ corrispoding to that observation's class"
   [class-num-vec]
   (let [vector-len (apply max class-num-vec)]
     ;(matrix
-      (vec
-        (map (fn [class-num]
-               (assoc (vec (take (inc vector-len) (repeat 0)))
-                      (dec class-num)
-                      1))
-             class-num-vec))))
+    (vec
+      (map (fn [class-num]
+             (assoc (vec (take (inc vector-len) (repeat 0)))
+                    (dec class-num)
+                    1))
+           class-num-vec))))
 
 (defn horizontal-matrix-concatenation
   "Same as horzcat() function from MATLAB."
@@ -77,3 +77,59 @@ Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elem
   (println "Bias:")
   (doseq [row (:bias data-set)]
     (println row )))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;   Utility function for sparce matrices
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn emap-skip-nil
+  "Like core.matrix/emap except it skips over nils. Only works with 2 dimensions."
+  ([func matrix]
+    (vec 
+      (map (fn [element]
+             (cond
+               (vector? element) (emap-skip-nil func element)
+               (number? element)  (func element)
+               :else nil))
+           matrix)))
+  ([func matrix-1 matrix-2]
+    (vec
+      (map (fn [element-from-mat-1 element-from-mat-2]
+             (cond
+               (vector? element-from-mat-1 ) (emap-skip-nil func 
+                                                            element-from-mat-1 
+                                                            element-from-mat-2)
+               (number? element-from-mat-1 ) (func 
+                                               element-from-mat-1 
+                                               element-from-mat-2)
+               :else nil))
+           matrix-1
+           matrix-2))))
+
+(defn replace-nils-with-zeros
+  "Returns the matrix with all nil replaced with 0s."
+  [matrix]
+  (vec
+    (map (fn [element]
+           (cond
+             (vector? element) (replace-nils-with-zeros element)
+             (nil? element)  0
+             :else element))
+         matrix)))
+
+(defn take-colums-of-2d-matrix
+  ""
+  [matrix start-col end-col]
+  (vec (map subvec 
+            matrix
+            (repeat start-col)
+            (repeat end-col))))
+
+(def m [[0 1 -2 7]
+        [3 nil 5 8]])
+(defn f
+  [x]
+  (/ (+ (Math/tanh x)
+        1)
+     2))
+(take-colums-of-2d-matrix m 1 3)
