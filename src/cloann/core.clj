@@ -63,7 +63,7 @@
         classes (vec (map util/output->class outputs))
         ; Uses outputs to find the classification error on the data set.
         classification-error (/ (count (filter true? (emap not= classes (flatten (:classes data-set)))))
-                                  (count (:outputs data-set)))]
+                                (count (:outputs data-set)))]
     (if (:debug-prints @nn-params)
       (do
         (println "Evaluation Of Network")
@@ -145,39 +145,46 @@
            testing-classification-error []
            validation-error []
            validation-classification-error []]
-      (if (or (= epoch (:max-epochs @nn-params))
-              (if (not (empty? validation-error))
-                (< (last validation-error) (:validation-stop-threshold @nn-params))
-                false))
-        (do
-          (println "Training finished. Now draw some graphs.")
-          (report/plot-nn-evaluations training-error
-                                      training-classification-error
-                                      testing-error
-                                      testing-classification-error
-                                      validation-error
-                                      validation-classification-error))
-        (let [training-eval (evaluate-network (:training-set data-sets) weights)
-              testing-eval (evaluate-network (:testing-set data-sets) weights)
-              validation-eval (evaluate-network (:validation-set data-sets) weights)]
-          (println "Starting Epoch" (inc epoch))
-          (recur 
-            ; Increment the epoch number
-            (inc epoch)
-            ; Apply the results of the backpropagation as the new weights
-            (backpropagation inputs
-                             outputs
-                             weights 
-                             (:learning-rate @nn-params)
-                             bias)
-            ;;;;;;;;;;;;;;;;;;;;;;;;
-            ; Append errors to vectors for reporting
-            (conj training-error (first training-eval))
-            (conj training-classification-error (second training-eval))
-            (conj testing-error (first testing-eval))
-            (conj testing-classification-error (second testing-eval))
-            (conj validation-error (first validation-eval))
-            (conj validation-classification-error (second validation-eval))))))))
+      (let [max-epochs-reached? (= epoch 
+                                   (:max-epochs @nn-params))
+            stop-threshold-reached? (and (not (empty? validation-error))
+                                         (< (last validation-error) 
+                                            (:validation-stop-threshold @nn-params)))]
+        (if (or max-epochs-reached?
+                stop-threshold-reached?)
+          (do
+            (println "Training finished. Now draw some graphs.")
+            (if stop-threshold-reached?
+              (println "Validation Stop Threshold Reached"))
+            (if max-epochs-reached?
+              (println "Max Epochs Reached"))
+            (report/plot-nn-evaluations training-error
+                                        training-classification-error
+                                        testing-error
+                                        testing-classification-error
+                                        validation-error
+                                        validation-classification-error))
+          (let [training-eval (evaluate-network (:training-set data-sets) weights)
+                testing-eval (evaluate-network (:testing-set data-sets) weights)
+                validation-eval (evaluate-network (:validation-set data-sets) weights)]
+            (println "Starting Epoch" (inc epoch))
+            (recur 
+              ; Increment the epoch number
+              (inc epoch)
+              ; Apply the results of the backpropagation as the new weights
+              (backpropagation inputs
+                               outputs
+                               weights 
+                               (:learning-rate @nn-params)
+                               bias)
+              ;;;;;;;;;;;;;;;;;;;;;;;;
+              ; Append errors to vectors for reporting
+              (conj training-error (first training-eval))
+              (conj training-classification-error (second training-eval))
+              (conj testing-error (first testing-eval))
+              (conj testing-classification-error (second testing-eval))
+              (conj validation-error (first validation-eval))
+              (conj validation-classification-error (second validation-eval)))))))))
 
 (defn run-cloann
   [params]
