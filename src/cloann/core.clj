@@ -80,30 +80,29 @@
 (defn backpropagation 
   "Returns the new weights for the network after 1 step of back propagation."
   [inputs-matrix outputs-matrix weight-matrix learning-rate bias-vector]
-  (let [; Pick random sample 
-        rand-sample-index (rand-int (count inputs-matrix))
-        ; Feed sample through network
-        ff-result (feed-forward [(nth inputs-matrix rand-sample-index)]
+  (let [; Feed inputs through network
+        ff-result (feed-forward inputs-matrix
                                 weight-matrix
                                 bias-vector)
         output (first ff-result)
         net (second ff-result)
         ; Take vector of how far off feed foward was
-        error-vector (- (nth outputs-matrix rand-sample-index)
+        error-vector (- outputs-matrix
                         output)
         ; How should the weight change
         delta (emap *
                     error-vector
                     (emap (:activation-func-derivative @nn-params) net))
         ; Put in temp for code readability
-        temp (concat (nth inputs-matrix rand-sample-index)
-                     (nth bias-vector rand-sample-index))
+        temp (util/horizontal-matrix-concatenation inputs-matrix
+                                                   bias-vector)
         ; How much should the weights change
         weights-delta (* learning-rate
                          (outer-product temp
                                         delta))
         ; What should the new weights be
-        new-weights (emap + weight-matrix 
+        new-weights (emap + 
+                          weight-matrix 
                           (reshape weights-delta 
                                    (shape weight-matrix)))]
     (if (:debug-prints @nn-params)

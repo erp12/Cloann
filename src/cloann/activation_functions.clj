@@ -1,7 +1,5 @@
 (ns cloann.activation-functions
-  (:require [cloann.util :as util])
-  (:use clojure.core.matrix)
-  (:use clojure.core.matrix.operators))
+  (:require [cloann.util :as util]))
 
 (defn hyperbolic-tangent
   [x]

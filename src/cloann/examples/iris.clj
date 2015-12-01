@@ -1,9 +1,7 @@
 (ns cloann.examples.iris
   (:require [cloann.core :as cloann]
             [cloann.dataIO :as dIO]
-            [cloann.util :as util])
-  (:use clojure.core.matrix)
-  (:use clojure.core.matrix.operators))
+            [cloann.util :as util]))
 
 ;; Matrix of all the data from the csv file
 (def training-data-matrix
@@ -19,7 +17,7 @@
                                                     validation-data-matrix
                                                     [0 1 2 3] ; Input indexes
                                                     [4 5 6]) ; Output indexes
-   :max-epochs 500
+   :max-epochs 100
    :max-weight-intial 0.5
    :learning-rate 0.1
    :validation-stop-threshold 0.1})
