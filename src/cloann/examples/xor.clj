@@ -19,4 +19,4 @@
 
 ;(cloann/run-cloann nn-params)
 
-(util/data-set-pretty-print (:testing-set (:data-sets nn-params)))
+;(util/data-set-pretty-print (:testing-set (:data-sets nn-params)))

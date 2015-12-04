@@ -1,9 +1,7 @@
 (ns cloann.examples.wine
   (:require [cloann.core :as cloann]
             [cloann.dataIO :as dIO]
-            [cloann.util :as util])
-  (:use clojure.core.matrix)
-  (:use clojure.core.matrix.operators))
+            [cloann.util :as util]))
 
 ;; Matrix of all the data from the csv file
 (def data-matrix
@@ -19,7 +17,7 @@
    :max-epochs 1000
    :max-weight-intial 1
    :learning-rate 0.02
-   :validation-stop-threshold 0.01
+   :validation-stop-threshold 0.03
    :num-hidden-nodes 1})
 
 ;(cloann/run-cloann nn-params)
