@@ -8,35 +8,30 @@
   (:use clojure.core.matrix)
   (:use clojure.core.matrix.operators))
 
+(def M1 [[:ii :ii :ii :ii :ii :ih :ih :ih :ih :io :io :io]
+         [:ii :ii :ii :ii :ii :ih :ih :ih :ih :io :io :io]
+         [:ii :ii :ii :ii :ii :ih :ih :ih :ih :io :io :io]
+         [:ii :ii :ii :ii :ii :ih :ih :ih :ih :io :io :io]
+         [:hi :hi :hi :hi :hi :hh :hh :hh :hh :ho :ho :ho]
+         [:hi :hi :hi :hi :hi :hh :hh :hh :hh :ho :ho :ho]
+         [:hi :hi :hi :hi :hi :hh :hh :hh :hh :ho :ho :ho]
+         [:hi :hi :hi :hi :hi :hh :hh :hh :hh :ho :ho :ho]
+         [:hi :hi :hi :hi :hi :hh :hh :hh :hh :ho :ho :ho]
+         [:oi :oi :oi :oi :oi :oh :oh :oh :oh :oo :oo :oo]
+         [:oi :oi :oi :oi :oi :oh :oh :oh :oh :oo :oo :oo]
+         [:oi :oi :oi :oi :oi :oh :oh :oh :oh :oo :oo :oo]
+         [:oi :oi :oi :oi :oi :oh :oh :oh :oh :oo :oo :oo]])
 
-(def M1 (array [[1 2 3 4] 
-                [3 2 5 7]]))
+(def layers  {:I {:num-inputs 4
+                  :num-outputs 5}
+              :H1 {:num-inputs 5
+                   :num-outputs 4}
+              :O {:num-inputs 4
+                  :num-outputs 3}})
+(def layer-conns [[:I :H1][:H1 :H2][:H2 :H1][:H2 :O]])
 
-(def foo {:count 5
-          :bias (array [[1]
-                        [1]
-                        [1]
-                        [1]
-                        [1]])
-          :inputs (array [[0.282131   0.269205   0.430645   0.427485]
-                          [0.582374   0.445654   0.581855   0.536988]
-                          [0.466896   0.480944   0.566734   0.500487]
-                          [0.744044   0.516233   0.672581   0.609990]
-                          [0.212844   0.516233   0.158468   0.135476]])
-          :outputs (array [[0 1 0]
-                           [0 1 0]
-                           [0 1 0]
-                           [0 1 0]
-                           [1 0 0]])
-          :classes (array [[2]
-                           [2]
-                           [2]
-                           [2]
-                           [1]])})
+(defn create-network-matrix
+  [layers layer-conns]
+  (let []))
 
-;(util/data-set-pretty-print foo)
-
-
-(- M1 [[0 1 0 1]
-       [1 2 3 4]])
- 
+(create-network-matrix layers layer-conns)

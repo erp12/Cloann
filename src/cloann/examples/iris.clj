@@ -1,9 +1,7 @@
 (ns cloann.examples.iris
   (:require [cloann.core :as cloann]
             [cloann.dataIO :as dIO]
-            [cloann.util :as util])
-  (:use clojure.core.matrix)
-  (:use clojure.core.matrix.operators))
+            [cloann.util :as util]))
 
 ;; Matrix of all the data from the csv file
 (def training-data-matrix
