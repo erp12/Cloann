@@ -33,7 +33,7 @@ Key | Value | Default
 
 ## Network Representation
 **Everything described in this section is still under development**
-
+Description of network representation coming soon!
 
 ## Usage / Examples
 ```clojure
