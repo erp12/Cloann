@@ -15,25 +15,13 @@ Key | Value | Default
 :validation-stop-threshold | Used as a stopping condition for training. When the validation error gets below this value, the network stops training. | 0.03
 
 ### Data set structure
-```clojure
-{:input-count 0
-   :output-count 0
-   :training-set {:inputs []
-                  :outputs []
-                  :classes []
-                  :count 0
-                  :bias []}
-   :validation-set {:inputs []
-                    :outputs []
-                    :classes []
-                    :count 0
-                    :bias []}
-   :test-set {:inputs []
-              :outputs []
-              :classes []
-              :count 0
-              :bias []}}
-```
+- Data Set
+  - input count: Number of inputs (or input nodes) to the network.
+  - output count: Number of outputs (or output nodes) to the network.
+  - training set:
+    - inputs: Matrix where each row is one set of inputs to the network.
+    - outputs: Matrix where each row is one set of outputs to the network, corrisponding to the same row in :inputs.
+    - classes: Column vector holding the index of the largest number in each row of outputs. (Ex: Output:'[0 0 1 0]' -> Class:'[2]')
 
 ## Network Representation
 **Everything described in this section is still under development**
