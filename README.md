@@ -7,7 +7,7 @@ Key | Value | Default
 |---|---|---|
 :activation-func | Actication function, or transfer function, of the nodes in the network | hyperbolic tangent
 :activation-func-derivative | Derivative of the activation function. Used in backpropagation. | hyperbolic tangent derivative
-:max-weight-initial | When generating random weights, the possible values for the weight w is -x <= w <= x, where x is the value of this parameter. 
+:max-weight-initial | When generating random weights, the possible values for the weight w is -x <= w <= x, where x is the value of this parameter. | 1
 :data-set | Map of :Training, :Validation, and :Testing data. Must be set before building/running the network. More detail below.| nil
 :learning-rate | How stronly backpropagation should change each weight per epoch. Often refered to as eta. | 0.02
 :max-epochs | Maximum number of epochs spent training the network. Used as a stopping condition for training. | 500
@@ -33,7 +33,8 @@ Key | Value | Default
 
 ## Network Representation
 **Everything described in this section is still under development**
-Description of network representation coming soon!
+
+Its a matrix! More in depth description of network representation coming soon! For a sneak peak, check out [this presentation](https://docs.google.com/presentation/d/187y-6zFwz03ue9W0MaWJgu_CZPth95mB5kY8o_AMue0/edit?usp=sharing).
 
 ## Usage / Examples
 ```clojure
