@@ -1,4 +1,5 @@
 (ns cloann.util
+  (:require [clojure.math.combinatorics :as combo])
   (:use clojure.core.matrix)
   (:use clojure.core.matrix.operators))
 
@@ -37,7 +38,9 @@ corrispoding to that observation's class"
 (defn horizontal-matrix-concatenation
   "Same as horzcat() function from MATLAB."
   [matrix-1 matrix-2]
-  (array (vec (map concat (rows matrix-1) (rows matrix-2)))))
+  (array (vec (map concat 
+                   (rows matrix-1) 
+                   (rows matrix-2)))))
 
 (defn sub-matrix 
   "Returns a sub matrix that starts at row,col."
@@ -90,19 +93,24 @@ Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elem
 
 (defn get-connection-matrix-by-id
   "Returns a sub matrix for the connections between the two layers."
-  [matrix [from-id to-id]]
-  (let [layers-info (meta matrix)
-        layer-ids (keys layers-info)
+  [matrix layers [from-id to-id]]
+  ;(println "gcmbi")
+  ;(println matrix)
+  ;(println layers)
+  ;(println from-id)
+  ;(println to-id)
+  ;(println)
+  (let [layer-ids (keys layers)
         start-row (reduce +
-                          (map #(:num-inputs (% layers-info))
+                          (map #(:num-inputs (% layers))
                                (first (split-at (.indexOf layer-ids from-id) 
                                                 layer-ids))))
         start-col (reduce +
-                          (map #(:num-outputs (% layers-info))
+                          (map #(:num-outputs (% layers))
                                (first (split-at (.indexOf layer-ids to-id) 
                                                 layer-ids))))
-        height (:num-inputs (from-id layers-info))
-        width (:num-inputs (from-id layers-info))]
+        height (:num-inputs (from-id layers))
+        width (:num-outputs (to-id layers))]
     (sub-matrix matrix start-row start-col height width)))
 
 (defn create-2D-vector-of-val
@@ -111,3 +119,11 @@ Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elem
   (vec (repeat rows
                (vec (repeat cols
                             x)))))
+
+(defn all-pairs 
+  "Creates list of vecots containing every pair of 2 elements in coll.
+Taken from: http://stackoverflow.com/questions/4053845/idomatic-way-to-iterate-through-all-pairs-of-a-collection-in-clojure"
+  [coll]
+  (when-let [s (next coll)]
+    (lazy-cat (for [y s] [(first coll) y])
+              (all-pairs s))))
