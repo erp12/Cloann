@@ -39,10 +39,12 @@
    :validation-stop-threshold 0.03})
 
 (swap! cloann/nn-params #(merge % nn-params))
-(cloann/run-cloann nn-params)
+;(cloann/run-cloann nn-params)
 
-;(def m (cloann/initialize-weights (cloann/generate-uninitialized-weight-matrix (:layers (:network-info @cloann/nn-params))
-;                                                                               (:layer-connections (:network-info @cloann/nn-params)))
-;                                  (:max-weight-intial @cloann/nn-params)))
-;(cloann/feed-forward (:inputs (:training-set (:data-sets @cloann/nn-params)))
-;                     m)
+(def m (cloann/initialize-weights (cloann/generate-uninitialized-weight-matrix (:layers (:network-info @cloann/nn-params))
+                                                                               (:layer-connections (:network-info @cloann/nn-params)))
+                                  (:max-weight-intial @cloann/nn-params)))
+(def ff (cloann/feed-forward (:inputs (:training-set (:data-sets @cloann/nn-params)))
+                             m))
+
+(util/matrix-2d-pretty-print (second ff))

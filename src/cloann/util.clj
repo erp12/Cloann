@@ -28,12 +28,12 @@ corrispoding to that observation's class"
   [class-num-vec]
   (let [vector-len (apply max class-num-vec)]
     ;(matrix
-      (vec
-        (map (fn [class-num]
-               (assoc (vec (take (inc vector-len) (repeat 0)))
-                      (dec class-num)
-                      1))
-             class-num-vec))))
+    (vec
+      (map (fn [class-num]
+             (assoc (vec (take (inc vector-len) (repeat 0)))
+                    (dec class-num)
+                    1))
+           class-num-vec))))
 
 (defn horizontal-matrix-concatenation
   "Same as horzcat() function from MATLAB."
@@ -127,3 +127,43 @@ Taken from: http://stackoverflow.com/questions/4053845/idomatic-way-to-iterate-t
   (when-let [s (next coll)]
     (lazy-cat (for [y s] [(first coll) y])
               (all-pairs s))))
+
+(defn replace-layer-connection
+  ""
+  [matrix layers [from-id to-id] new-mat]
+  (let [layer-ids (keys layers)
+        start-row (reduce +
+                          (map #(:num-inputs (% layers))
+                               (first (split-at (.indexOf layer-ids from-id) 
+                                                layer-ids))))
+        start-col (reduce +
+                          (map #(:num-outputs (% layers))
+                               (first (split-at (.indexOf layer-ids to-id) 
+                                                layer-ids))))
+        height (:num-inputs (from-id layers))
+        width (:num-outputs (to-id layers))]
+    (loop [r start-row
+           c start-col
+           m matrix]
+      (if (and (= r 
+                  (+ start-row
+                     height))
+               (= c
+                  (+ start-col
+                     width)))
+        m
+        (if (< c
+               (+ start-col
+                  width))
+          (recur r
+                 (inc c)
+                 (assoc-in m
+                           [(int r) (int c)]
+                           (get-in new-mat
+                                   [(int (- r
+                                            start-row))
+                                    (int (- c
+                                            start-col))])))
+          (recur (inc r)
+                 start-col
+                 m))))))

@@ -74,6 +74,7 @@ neural network given the inputs and the weights."
         net (inner-product temp 
                            weight-matrix)
         outputs (emap (:activation-func @nn-params) net)]
+    (println (shape net))
     [outputs net]))
 
 (defn feed-forward
@@ -81,18 +82,19 @@ neural network given the inputs and the weights."
   [inputs matrix]
   (loop [remaining-layer-connections (:layer-connections (:network-info @nn-params))
          next-inputs inputs
-         network-chunks {}]
+         net matrix]
     (if (empty? remaining-layer-connections)
-      [next-inputs network-chunks]
+      [next-inputs net]
       (let [ff-result (feed-forward-layer next-inputs
                                           (util/get-connection-matrix-by-id matrix
                                                                             (:layers (:network-info @nn-params))
                                                                             (first remaining-layer-connections)))]
         (recur (rest remaining-layer-connections)
                (first ff-result)
-               (assoc network-chunks
-                      (first remaining-layer-connections)
-                      (second ff-result)))))))
+               (util/replace-layer-connection net
+                                              (:layers (:network-info @nn-params))
+                                              (first remaining-layer-connections)
+                                              (second ff-result)))))))
 
 (defn evaluate-network
   "Returns the error, and classification error of the network on a particular data-set"
