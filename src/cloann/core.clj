@@ -50,6 +50,12 @@ that are connected."
                           %)
                  sub-weight-matries))))
 
+(defn generate-uninitialized-weight-matrix
+  "Returns entire network matrix with uninitialized weights between layers
+that are connected."
+  [layers layer-conns]
+  (let [total-num-nodes ()]))
+
 (defn initialize-weights
   "replaces all 0s in the matrix with random weight w where -max-w < w < max-w.
 Leaves the nils in the matrix."
@@ -73,7 +79,8 @@ neural network given the inputs and the weights."
                                                    (vec (repeat (count inputs) [1])))
         net (inner-product temp 
                            weight-matrix)
-        outputs (emap (:activation-func @nn-params) net)]
+        outputs (emap (:activation-func @nn-params) net)
+        ]
     (println (shape net))
     [outputs net]))
 
@@ -82,9 +89,10 @@ neural network given the inputs and the weights."
   [inputs matrix]
   (loop [remaining-layer-connections (:layer-connections (:network-info @nn-params))
          next-inputs inputs
-         net matrix]
+         net matrix
+         layers-inputs-and-outputs {}]
     (if (empty? remaining-layer-connections)
-      [next-inputs net]
+      [next-inputs layers-inputs-and-outputs]
       (let [ff-result (feed-forward-layer next-inputs
                                           (util/get-connection-matrix-by-id matrix
                                                                             (:layers (:network-info @nn-params))
@@ -94,7 +102,10 @@ neural network given the inputs and the weights."
                (util/replace-layer-connection net
                                               (:layers (:network-info @nn-params))
                                               (first remaining-layer-connections)
-                                              (second ff-result)))))))
+                                              (second ff-result))
+               (assoc (first remaining-layer-connections)
+                      {:inputs next-inputs
+                       :outputs (first ff-result)}))))))
 
 (defn evaluate-network
   "Returns the error, and classification error of the network on a particular data-set"
@@ -105,8 +116,6 @@ neural network given the inputs and the weights."
                                 (:bias data-set))
         ; Pull out the outputs from the feed forward result
         outputs (first ff-result)
-        ; Pull out the resulting network from the feed forward.
-        net (second ff-result)
         ; Calcuate the error of the network on the data set.
         regression-error (/ (util/sum-all-2D-matrix-components (emap square
                                                                      (- outputs
@@ -138,42 +147,17 @@ neural network given the inputs and the weights."
         ff-result (feed-forward inputs-matrix
                                 weight-matrix
                                 bias-vector)
-        output (first ff-result)
-        net (second ff-result)
-        ; Take vector of how far off feed foward was
-        error-vector (- outputs-matrix
-                        output)
-        ; How should the weight change
-        delta (emap *
-                    error-vector
-                    (emap (:activation-func-derivative @nn-params) 
-                          net))
-        ; Put in temp for code readability
-        temp (transpose (util/horizontal-matrix-concatenation inputs-matrix
-                                                              bias-vector))
-        ; How much should the weights change
-        weights-delta (* learning-rate
-                         (inner-product temp
-                                        delta))
-        ; What should the new weights be
-        new-weights (+ weight-matrix 
-                       weights-delta)]
-    (if (:debug-prints @nn-params)
-      (do
-        (println "Backpropagation" )
-        (println "Old Weights:")
-        (util/matrix-2d-pretty-print weight-matrix)
-        (println "Outputs")
-        (util/matrix-2d-pretty-print output)
-        (println "Net")
-        (util/matrix-2d-pretty-print net)
-        (println "Error Vector" error-vector)
-        (println "Weights Delta")
-        (util/matrix-2d-pretty-print weights-delta)
-        (println "New Weights")
-        (util/matrix-2d-pretty-print new-weights)
-        (println)))
-    new-weights))
+        outputs (first ff-result)
+        layer-input-and-outputs (second ff-result)
+
+        squared-errors (* 0.5
+                         (emap square
+                               (- outputs-matrix
+                                  outputs)))
+        ]
+    ()))
+
+(defn train-nn
 
 ;(defn train-nn
 ;  [data-sets]

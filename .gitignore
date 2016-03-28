@@ -1,2 +1,21 @@
-*.jar
-target
+### Reports ###
+*.png
+
+### OSX ###
+.DS_Store
+.AppleDouble
+.LSOverride
+
+### Leiningen ###
+pom.xml
+pom.xml.asc
+*jar
+/lib/
+/classes/
+/target/
+/checkouts/
+.lein-deps-sum
+.lein-repl-history
+.lein-plugins/
+.lein-failures
+.nrepl-port

@@ -48,14 +48,14 @@
          ["i" "j" "k"]
          ["m" "n" "o"]])
 
-(util/matrix-2d-pretty-print (util/replace-layer-connection uninitialized-weights 
-                                                            layers 
-                                                            [:I :H1] 
-                                                            M2))
-(println)
-(util/matrix-2d-pretty-print (util/replace-layer-connection uninitialized-weights 
-                                                            layers 
-                                                            [:H2 :O] 
-                                                            M3))
+;(util/matrix-2d-pretty-print (util/replace-layer-connection uninitialized-weights 
+;                                                            layers 
+;                                                            [:I :H1] 
+;                                                            M2))
+;(println)
+;(util/matrix-2d-pretty-print (util/replace-layer-connection uninitialized-weights 
+;                                                            layers 
+;                                                            [:H2 :O] 
+;                                                            M3))
 
 ;(util/matrix-2d-pretty-print uninitialized-weights )
