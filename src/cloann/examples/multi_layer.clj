@@ -13,18 +13,11 @@
   (dIO/csv->matrix "data/iris_validation.csv" false))
 
 (def network-info 
-  {:layers  {:I {:num-inputs 4
-                 :num-outputs 5}
-             :H1 {:num-inputs 5
-                  :num-outputs 5}
-             :H2 {:num-inputs 5
-                  :num-outputs 4}
-             :O {:num-inputs 4
-                 :num-outputs 3}}
+  {:layers  {:I {:num-nodes 4}
+             :H1 {:num-nodes 5}
+             :O {:num-nodes 4}}
    :layer-connections [[:I  :H1]
-                       [:H1 :H2]
-                       [:H2 :H1]
-                       [:H2 :O ]]})
+                       [:H1 :O]]})
 
 (def nn-params
   {:data-sets (dIO/create-data-sets-from-3-matrices training-data-matrix
@@ -41,10 +34,14 @@
 (swap! cloann/nn-params #(merge % nn-params))
 ;(cloann/run-cloann nn-params)
 
+(cloann/generate-uninitialized-weight-matrix (:layers (:network-info @cloann/nn-params))
+                                             (:layer-connections (:network-info @cloann/nn-params))
+
 (def m (cloann/initialize-weights (cloann/generate-uninitialized-weight-matrix (:layers (:network-info @cloann/nn-params))
                                                                                (:layer-connections (:network-info @cloann/nn-params)))
                                   (:max-weight-intial @cloann/nn-params)))
-(def ff (cloann/feed-forward (:inputs (:training-set (:data-sets @cloann/nn-params)))
-                             m))
 
-(util/matrix-2d-pretty-print (second ff))
+;(def ff (cloann/feed-forward (:inputs (:training-set (:data-sets @cloann/nn-params)))
+;                             m))
+
+;(util/matrix-2d-pretty-print (second ff))
