@@ -12,18 +12,13 @@
 (def validation-data-matrix
   (dIO/csv->matrix "data/iris_validation.csv" false))
 
-(def network-info 
-  {:layers  {:I {:num-inputs 4
-                 :num-outputs 5}
-             :H1 {:num-inputs 5
-                  :num-outputs 5}
-             :H2 {:num-inputs 5
-                  :num-outputs 4}
-             :O {:num-inputs 4
-                 :num-outputs 3}}
+(def topology-encoding 
+  {:layers  {:I {:num-nodes 4}
+             :H1 {:num-nodes 5}
+             :H2 {:num-nodes 5}
+             :O {:num-nodes 4}}
    :layer-connections [[:I  :H1]
                        [:H1 :H2]
-                       [:H2 :H1]
                        [:H2 :O ]]})
 
 (def nn-params
@@ -32,7 +27,7 @@
                                                     validation-data-matrix
                                                     [0 1 2 3] ; Input indexes
                                                     [4 5 6]) ; Output indexes
-   :network-info network-info
+   :topology-encoding topology-encoding
    :max-epochs 500
    :max-weight-intial 0.5
    :learning-rate 0.02
@@ -44,7 +39,7 @@
 (def m (cloann/initialize-weights (cloann/generate-uninitialized-weight-matrix (:layers (:network-info @cloann/nn-params))
                                                                                (:layer-connections (:network-info @cloann/nn-params)))
                                   (:max-weight-intial @cloann/nn-params)))
-(def ff (cloann/feed-forward (:inputs (:training-set (:data-sets @cloann/nn-params)))
-                             m))
+;(def ff (cloann/feed-forward (:inputs (:training-set (:data-sets @cloann/nn-params)))
+;                             m))
 
-(util/matrix-2d-pretty-print (second ff))
+;(util/matrix-2d-pretty-print (second ff))

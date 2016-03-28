@@ -1,7 +1,7 @@
 (ns cloann.core
   (:gen-class)
   (:require [cloann.util :as util]
-            [cloann.activation-functions :as act-funcs]
+            [cloann.transfer-functions :as transfer-funcs]
             [cloann.nn-reporting :as report]
             [clojure.math.combinatorics :as combo])
   (:use clojure.core.matrix)
@@ -10,11 +10,11 @@
 ; Default params to the neural network.
 (def nn-params
   (atom 
-    {:activation-func act-funcs/hyperbolic-tangent
-     :activation-func-derivative act-funcs/hyperbolic-tangent-derivative
+    {:transfer-func transfer-funcs/hyperbolic-tangent
+     :transfer-func-derivative transfer-funcs/hyperbolic-tangent-derivative
      :max-weight-initial 1
      :data-set nil ; Must be set in problem file
-     :network-info nil ; Must be set in problem file
+     :topology-encoding nil ; Must be set in problem file
      :plot-graphs true
      :learning-rate 0.02
      :max-epochs 500

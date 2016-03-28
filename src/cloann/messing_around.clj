@@ -9,18 +9,16 @@
   (:use clojure.core.matrix)
   (:use clojure.core.matrix.operators))
 
-(def layers  {:I {:num-inputs 4
-                  :num-outputs 5}
-              :H1 {:num-inputs 5
-                   :num-outputs 5}
-              :H2 {:num-inputs 5
-                   :num-outputs 4}
-              :O {:num-inputs 4
-                  :num-outputs 3}})
-(def layer-conns [[:I :H1]
-                  [:H1 :H2]
-                  [:H2 :H1]
-                  [:H2 :O]])
+
+(def layers  {:I {:num-nodes 4}
+              :H1 {:num-nodes 5}
+              :H2 {:num-nodes 5}
+              :O {:num-nodes 4}})
+
+(def layer-connections [[:I  :H1]
+                        [:H1 :H2]
+                        [:H2 :O ]]})
+
 
 (def uninitialized-weights [[nil nil nil nil nil 0   1   2   3   4   nil nil nil nil nil nil nil]
                             [nil nil nil nil nil 5   6   7   8   9   nil nil nil nil nil nil nil]
