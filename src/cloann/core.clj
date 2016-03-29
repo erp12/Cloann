@@ -32,8 +32,8 @@
       (for [ids all-id-pairs]
         (let [i ((first ids) layers)
               o ((second ids) layers)]
-          (util/create-2D-vector-of-val (:num-inputs i)
-                                        (:num-outputs o)
+          (util/create-2D-vector-of-val (:num-nodes i)
+                                        (:num-nodes o)
                                         (if (some #(= ids %) 
                                                   layer-conns)
                                           0
@@ -49,12 +49,6 @@ that are connected."
             (map #(reduce util/horizontal-matrix-concatenation 
                           %)
                  sub-weight-matries))))
-
-(defn generate-uninitialized-weight-matrix
-  "Returns entire network matrix with uninitialized weights between layers
-that are connected."
-  [layers layer-conns]
-  (let [total-num-nodes ()]))
 
 (defn initialize-weights
   "replaces all 0s in the matrix with random weight w where -max-w < w < max-w.
@@ -75,37 +69,28 @@ Leaves the nils in the matrix."
   "Computes the output of a single connection between layers of the 
 neural network given the inputs and the weights."
   [inputs weight-matrix]
-  (let [temp (util/horizontal-matrix-concatenation inputs
-                                                   (vec (repeat (count inputs) [1])))
+  (let [temp (conj inputs 1)
         net (inner-product temp 
                            weight-matrix)
-        outputs (emap (:activation-func @nn-params) net)
-        ]
-    (println (shape net))
+        outputs (emap (:transfer-func @nn-params) net)]
+    ;(println temp)
     [outputs net]))
 
 (defn feed-forward
-  "Computes the output of the neural network given the inputs and the weights."
-  [inputs matrix]
-  (loop [remaining-layer-connections (:layer-connections (:network-info @nn-params))
-         next-inputs inputs
-         net matrix
-         layers-inputs-and-outputs {}]
+  ""
+  [input-values weight-matrix]
+  (loop [remaining-layer-connections (:layer-connections (:topology-encoding @nn-params))
+         current-inputs input-values]
     (if (empty? remaining-layer-connections)
-      [next-inputs layers-inputs-and-outputs]
-      (let [ff-result (feed-forward-layer next-inputs
-                                          (util/get-connection-matrix-by-id matrix
-                                                                            (:layers (:network-info @nn-params))
-                                                                            (first remaining-layer-connections)))]
+      current-inputs
+      (let [ff-layer-result (feed-forward-layer current-inputs
+                                                (util/get-connection-matrix-by-id weight-matrix
+                                                                                  (:layers (:topology-encoding @nn-params))
+                                                                                  (first remaining-layer-connections)))]
         (recur (rest remaining-layer-connections)
-               (first ff-result)
-               (util/replace-layer-connection net
-                                              (:layers (:network-info @nn-params))
-                                              (first remaining-layer-connections)
-                                              (second ff-result))
-               (assoc (first remaining-layer-connections)
-                      {:inputs next-inputs
-                       :outputs (first ff-result)}))))))
+               (first ff-layer-result))))))
+
+
 
 (defn evaluate-network
   "Returns the error, and classification error of the network on a particular data-set"
@@ -116,6 +101,7 @@ neural network given the inputs and the weights."
                                 (:bias data-set))
         ; Pull out the outputs from the feed forward result
         outputs (first ff-result)
+        net (second ff-result)
         ; Calcuate the error of the network on the data set.
         regression-error (/ (util/sum-all-2D-matrix-components (emap square
                                                                      (- outputs
@@ -149,15 +135,14 @@ neural network given the inputs and the weights."
                                 bias-vector)
         outputs (first ff-result)
         layer-input-and-outputs (second ff-result)
-
+        
         squared-errors (* 0.5
-                         (emap square
-                               (- outputs-matrix
-                                  outputs)))
+                          (emap square
+                                (- outputs-matrix
+                                   outputs)))
         ]
     ()))
 
-(defn train-nn
 
 ;(defn train-nn
 ;  [data-sets]
@@ -227,7 +212,6 @@ neural network given the inputs and the weights."
 ;  (swap! nn-params #(merge % params))
 ;  ;(println (:data-sets @nn-params))
 ;  (train-nn (:data-sets @nn-params)))
-
 
 (defn -main 
   []

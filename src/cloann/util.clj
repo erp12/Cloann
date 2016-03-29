@@ -6,7 +6,8 @@
 (defn nat-log
   "Implements LN function using Math/log"
   [x]
-  (/ (Math/log x) (Math/log Math/E)))
+  (/ (Math/log x) 
+     (Math/log Math/E)))
 
 (defn get-date-time-string
   "Returns date and time.
@@ -27,7 +28,6 @@ corrispoding to that observation's class"
   "Converts a vector of class numbers, into the desired ANN output matrix"
   [class-num-vec]
   (let [vector-len (apply max class-num-vec)]
-    ;(matrix
     (vec
       (map (fn [class-num]
              (assoc (vec (take (inc vector-len) (repeat 0)))
@@ -102,15 +102,15 @@ Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elem
   ;(println)
   (let [layer-ids (keys layers)
         start-row (reduce +
-                          (map #(:num-inputs (% layers))
+                          (map #(:num-nodes (% layers))
                                (first (split-at (.indexOf layer-ids from-id) 
                                                 layer-ids))))
         start-col (reduce +
-                          (map #(:num-outputs (% layers))
+                          (map #(:num-nodes (% layers))
                                (first (split-at (.indexOf layer-ids to-id) 
                                                 layer-ids))))
-        height (:num-inputs (from-id layers))
-        width (:num-outputs (to-id layers))]
+        height (:num-nodes (from-id layers))
+        width (:num-nodes (to-id layers))]
     (sub-matrix matrix start-row start-col height width)))
 
 (defn create-2D-vector-of-val
@@ -133,15 +133,15 @@ Taken from: http://stackoverflow.com/questions/4053845/idomatic-way-to-iterate-t
   [matrix layers [from-id to-id] new-mat]
   (let [layer-ids (keys layers)
         start-row (reduce +
-                          (map #(:num-inputs (% layers))
+                          (map #(:num-nodes (% layers))
                                (first (split-at (.indexOf layer-ids from-id) 
                                                 layer-ids))))
         start-col (reduce +
-                          (map #(:num-outputs (% layers))
+                          (map #(:num-nodes (% layers))
                                (first (split-at (.indexOf layer-ids to-id) 
                                                 layer-ids))))
-        height (:num-inputs (from-id layers))
-        width (:num-outputs (to-id layers))]
+        height (:num-nodes (from-id layers))
+        width (:num-nodes (to-id layers))]
     (loop [r start-row
            c start-col
            m matrix]

@@ -2,7 +2,7 @@
   (:require [cloann.core :as cloann]
             [cloann.dataIO :as dIO]
             [cloann.util :as util]
-            [cloann.activation-functions :as act-funcs]))
+            [cloann.transfer-functions :as tran-funcs]))
 
 ;; Matrix of all the data from the csv file
 (def training-data-matrix
@@ -15,7 +15,7 @@
 (def topology-encoding 
   {:layers  {:I {:num-nodes 4}
              :H1 {:num-nodes 5}
-             :O {:num-nodes 4}}
+             :O {:num-nodes 3}}
    :layer-connections [[:I  :H1]
                        [:H1 :O]]})
 (def nn-params
@@ -33,14 +33,17 @@
 (swap! cloann/nn-params #(merge % nn-params))
 ;(cloann/run-cloann nn-params)
 
-(cloann/generate-uninitialized-weight-matrix (:layers (:network-info @cloann/nn-params))
-                                             (:layer-connections (:network-info @cloann/nn-params))
+(def uwm (cloann/generate-uninitialized-weight-matrix (:layers (:topology-encoding @cloann/nn-params))
+                                                      (:layer-connections (:topology-encoding @cloann/nn-params))))
 
-(def m (cloann/initialize-weights (cloann/generate-uninitialized-weight-matrix (:layers (:network-info @cloann/nn-params))
-                                                                               (:layer-connections (:network-info @cloann/nn-params)))
-                                  (:max-weight-intial @cloann/nn-params)))
+;(util/matrix-2d-pretty-print uwm)
 
-;(def ff (cloann/feed-forward (:inputs (:training-set (:data-sets @cloann/nn-params)))
-;                             m))
+(def wm (cloann/initialize-weights uwm
+                                   (:max-weight-intial @cloann/nn-params)))
 
-;(util/matrix-2d-pretty-print (second ff))
+;(util/matrix-2d-pretty-print wm)
+
+(def ff (cloann/feed-forward (first (:inputs (:training-set (:data-sets @cloann/nn-params))))
+                             wm))
+
+ff
