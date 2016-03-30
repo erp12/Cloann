@@ -113,6 +113,21 @@ Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elem
         width (:num-nodes (to-id layers))]
     (sub-matrix matrix start-row start-col height width)))
 
+(defn get-connection-matrix-by-id-with-bias
+  "Same as get-connection-matrix-by-id, but includes row of relevant bias nodes."
+  [matrix layers [from-id to-id]]
+  (let [connection-matrix-without-bias (get-connection-matrix-by-id matrix layers [from-id to-id])
+        all-bias-weights (last matrix)
+        bias-for-connection (let [layer-ids (keys layers)
+                                  start-col (reduce +
+                                                    (map #(:num-nodes (% layers))
+                                                         (first (split-at (.indexOf layer-ids to-id) 
+                                                                          layer-ids))))
+                                  width (:num-nodes (to-id layers))]
+                              (subvec all-bias-weights start-col (+ start-col width)))]
+    (concat connection-matrix-without-bias
+            [bias-for-connection])))
+
 (defn create-2D-vector-of-val
   "Creates vector of vectors of given dimensions where every value is x."
   [rows cols x]
@@ -128,8 +143,8 @@ Taken from: http://stackoverflow.com/questions/4053845/idomatic-way-to-iterate-t
     (lazy-cat (for [y s] [(first coll) y])
               (all-pairs s))))
 
-(defn replace-layer-connection
-  ""
+(defn replace-layer-connection-weights-in-matrix
+  "Replaces a sub-matrix inside the weight matrix."
   [matrix layers [from-id to-id] new-mat]
   (let [layer-ids (keys layers)
         start-row (reduce +
@@ -167,3 +182,10 @@ Taken from: http://stackoverflow.com/questions/4053845/idomatic-way-to-iterate-t
           (recur (inc r)
                  start-col
                  m))))))
+
+(defn num-nodes-in-network
+  "Based on layers encoding, returns number of nodes in the network."
+  [layers]
+  (apply +
+         (map #(:num-nodes %) 
+              (vals layers))))

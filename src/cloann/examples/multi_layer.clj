@@ -41,8 +41,6 @@
 (def wm (cloann/initialize-weights uwm
                                    (:max-weight-intial @cloann/nn-params)))
 
-;(util/matrix-2d-pretty-print wm)
-
 (def ff (cloann/feed-forward (first (:inputs (:training-set (:data-sets @cloann/nn-params))))
                              wm))
 

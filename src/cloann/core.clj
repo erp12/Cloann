@@ -45,10 +45,13 @@ that are connected."
   [layers layer-conns]
   (let [sub-weight-matries (generate-sub-matrices-from-layer-data layers 
                                                                   layer-conns)]
-    (reduce concat
-            (map #(reduce util/horizontal-matrix-concatenation 
-                          %)
-                 sub-weight-matries))))
+    (concat
+      (reduce concat
+              (map #(reduce util/horizontal-matrix-concatenation 
+                            %)
+                   sub-weight-matries))
+      [(vec (repeat (util/num-nodes-in-network (:layers (:topology-encoding @nn-params)))
+                   0))])))
 
 (defn initialize-weights
   "replaces all 0s in the matrix with random weight w where -max-w < w < max-w.
@@ -74,21 +77,28 @@ neural network given the inputs and the weights."
                            weight-matrix)
         outputs (emap (:transfer-func @nn-params) net)]
     ;(println temp)
-    [outputs net]))
+    {:output outputs 
+     :net net}))
 
 (defn feed-forward
-  ""
+  "Takes input values and returns the outputs based on network weights."
   [input-values weight-matrix]
   (loop [remaining-layer-connections (:layer-connections (:topology-encoding @nn-params))
-         current-inputs input-values]
+         current-inputs input-values
+         result {:output nil
+                 :net (subvec weight-matrix 0 (count weight-matrix)) }] ; Remove the bias row
     (if (empty? remaining-layer-connections)
-      current-inputs
+      (assoc result :output current-inputs)
       (let [ff-layer-result (feed-forward-layer current-inputs
-                                                (util/get-connection-matrix-by-id weight-matrix
-                                                                                  (:layers (:topology-encoding @nn-params))
-                                                                                  (first remaining-layer-connections)))]
+                                                (util/get-connection-matrix-by-id-with-bias weight-matrix
+                                                                                            (:layers (:topology-encoding @nn-params))
+                                                                                            (first remaining-layer-connections)))]
         (recur (rest remaining-layer-connections)
-               (first ff-layer-result))))))
+               (:output ff-layer-result)
+               (assoc result :net (util/replace-layer-weights-in-matrix (:net result)
+                                                                        (:layers (:topology-encoding @nn-params))
+                                                                        (first remaining-layer-connections)
+                                                                        (:net ff-layer-result))))))))
 
 
 
