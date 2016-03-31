@@ -51,7 +51,7 @@ that are connected."
                             %)
                    sub-weight-matries))
       [(vec (repeat (util/num-nodes-in-network (:layers (:topology-encoding @nn-params)))
-                   0))])))
+                    0))])))
 
 (defn initialize-weights
   "replaces all 0s in the matrix with random weight w where -max-w < w < max-w.
@@ -72,33 +72,32 @@ Leaves the nils in the matrix."
   "Computes the output of a single connection between layers of the 
 neural network given the inputs and the weights."
   [inputs weight-matrix]
-  (let [temp (conj inputs 1)
-        net (inner-product temp 
+  (let [net (inner-product (conj inputs 1)
                            weight-matrix)
         outputs (emap (:transfer-func @nn-params) net)]
-    ;(println temp)
+    (println net)
     {:output outputs 
-     :net net}))
+     :sum-of-weighted-inputs net}))
 
 (defn feed-forward
   "Takes input values and returns the outputs based on network weights."
   [input-values weight-matrix]
-  (loop [remaining-layer-connections (:layer-connections (:topology-encoding @nn-params))
+  (loop [remaining-layer-connections (util/sort-layer-connections (:layer-connections (:topology-encoding @nn-params)))
          current-inputs input-values
          result {:output nil
-                 :net (subvec weight-matrix 0 (count weight-matrix)) }] ; Remove the bias row
+                 :sum-of-weighted-inputs {}}] ; Remove the bias row
     (if (empty? remaining-layer-connections)
       (assoc result :output current-inputs)
       (let [ff-layer-result (feed-forward-layer current-inputs
                                                 (util/get-connection-matrix-by-id-with-bias weight-matrix
                                                                                             (:layers (:topology-encoding @nn-params))
-                                                                                            (first remaining-layer-connections)))]
+                                                                                            (first remaining-layer-connections)))
+            foo (println (:sum-of-weighted-inputs ff-layer-result) "\n")]
         (recur (rest remaining-layer-connections)
                (:output ff-layer-result)
-               (assoc result :net (util/replace-layer-weights-in-matrix (:net result)
-                                                                        (:layers (:topology-encoding @nn-params))
-                                                                        (first remaining-layer-connections)
-                                                                        (:net ff-layer-result))))))))
+               (assoc-in result 
+                         [:sum-of-weighted-inputs (second (first remaining-layer-connections))]
+                         (:sum-of-weighted-inputs ff-layer-result)))))))
 
 
 
@@ -138,20 +137,13 @@ neural network given the inputs and the weights."
 
 (defn backpropagation 
   "Returns the new weights for the network after 1 step of back propagation."
-  [inputs-matrix outputs-matrix weight-matrix learning-rate bias-vector]
+  [input-pattern output-pattern weight-matrix learning-rate]
   (let [; Feed sample through network
-        ff-result (feed-forward inputs-matrix
-                                weight-matrix
-                                bias-vector)
-        outputs (first ff-result)
-        layer-input-and-outputs (second ff-result)
-        
-        squared-errors (* 0.5
-                          (emap square
-                                (- outputs-matrix
-                                   outputs)))
-        ]
-    ()))
+        ff-result (feed-forward input-pattern
+                                weight-matrix)
+        error (- output-pattern 
+                 (:output ff-result))]
+    (println )))
 
 
 ;(defn train-nn

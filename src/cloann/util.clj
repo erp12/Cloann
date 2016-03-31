@@ -189,3 +189,28 @@ Taken from: http://stackoverflow.com/questions/4053845/idomatic-way-to-iterate-t
   (apply +
          (map #(:num-nodes %) 
               (vals layers))))
+
+(defn in? 
+  "true if coll contains elm.
+http://stackoverflow.com/questions/3249334/test-whether-a-list-contains-a-specific-value-in-clojure"
+  [coll elm]  
+  (some #(= elm %) coll))
+
+(defn sort-layer-connections
+  "Sorts layer connections so that signal begins at input layer and is passed
+sequencially through layers."
+  [layer-conns]
+  (loop [remaining-layer-conns layer-conns
+         sorted-layer-conns []
+         looking-for-connections-from [:I]]
+    (let [found-layers (filter #(in? looking-for-connections-from
+                                     (first %)) 
+                               remaining-layer-conns)]
+      (if (empty? remaining-layer-conns)
+        sorted-layer-conns
+        (recur (remove #(in? looking-for-connections-from
+                             (first %))
+                       remaining-layer-conns)
+               (concat sorted-layer-conns
+                       found-layers)
+               (vec (map #(second %) found-layers)))))))
