@@ -44,4 +44,11 @@
 (def ff (cloann/feed-forward (first (:inputs (:training-set (:data-sets @cloann/nn-params))))
                              wm))
 
-ff
+;ff
+
+(def bp (cloann/backpropagation (first (:inputs (:training-set (:data-sets @cloann/nn-params))))
+                                (first (:outputs (:training-set (:data-sets @cloann/nn-params))))
+                                wm
+                                0.1))
+
+bp

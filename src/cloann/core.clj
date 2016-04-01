@@ -75,7 +75,7 @@ neural network given the inputs and the weights."
   (let [net (inner-product (conj inputs 1)
                            weight-matrix)
         outputs (emap (:transfer-func @nn-params) net)]
-    (println net)
+    ;(println net)
     {:output outputs 
      :sum-of-weighted-inputs net}))
 
@@ -85,17 +85,20 @@ neural network given the inputs and the weights."
   (loop [remaining-layer-connections (util/sort-layer-connections (:layer-connections (:topology-encoding @nn-params)))
          current-inputs input-values
          result {:output nil
-                 :sum-of-weighted-inputs {}}] ; Remove the bias row
+                 :sum-of-weighted-inputs {}
+                 :ff-order []}]
     (if (empty? remaining-layer-connections)
       (assoc result :output current-inputs)
       (let [ff-layer-result (feed-forward-layer current-inputs
                                                 (util/get-connection-matrix-by-id-with-bias weight-matrix
                                                                                             (:layers (:topology-encoding @nn-params))
-                                                                                            (first remaining-layer-connections)))
-            foo (println (:sum-of-weighted-inputs ff-layer-result) "\n")]
+                                                                                            (first remaining-layer-connections)))]
         (recur (rest remaining-layer-connections)
                (:output ff-layer-result)
-               (assoc-in result 
+               (assoc-in (assoc result
+                                :ff-order
+                                (concat (:ff-order result)
+                                        [(first remaining-layer-connections)]))
                          [:sum-of-weighted-inputs (second (first remaining-layer-connections))]
                          (:sum-of-weighted-inputs ff-layer-result)))))))
 
@@ -135,15 +138,38 @@ neural network given the inputs and the weights."
         (println)))
     [regression-error classification-error]))
 
+(defn error-signal-of-hidden-layer
+  ""
+  [weight-matrix-from-this-layer errors-of-next-layer]
+  (vec
+    (map (fn [x] (apply + x))
+         (map * 
+              weight-matrix-from-this-layer 
+              (repeat errors-of-next-layer)))))
+
 (defn backpropagation 
   "Returns the new weights for the network after 1 step of back propagation."
   [input-pattern output-pattern weight-matrix learning-rate]
   (let [; Feed sample through network
         ff-result (feed-forward input-pattern
                                 weight-matrix)
-        error (- output-pattern 
-                 (:output ff-result))]
-    (println )))
+        error-of-output (- output-pattern 
+                           (:output ff-result))
+        error-signals (loop [remaining-layer-connections-back (reverse (:ff-order ff-result))
+                             deltas {:O error-of-output}]
+                        (if (empty? remaining-layer-connections-back)
+                          deltas
+                          (recur (rest remaining-layer-connections-back)
+                                 (assoc deltas
+                                        (first (first remaining-layer-connections-back))
+                                        (error-signal-of-hidden-layer (util/get-connection-matrix-by-id weight-matrix
+                                                                                                        (:layers (:topology-encoding @nn-params))
+                                                                                                        (first remaining-layer-connections-back))
+                                                                      (get deltas
+                                                                           (second (first remaining-layer-connections-back))))))))
+        ]
+    (println "Error Signals: " error-signals)
+    ))
 
 
 ;(defn train-nn
