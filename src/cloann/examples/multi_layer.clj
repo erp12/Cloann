@@ -25,32 +25,32 @@
                                                     [0 1 2 3] ; Input indexes
                                                     [4 5 6]) ; Output indexes
    :topology-encoding topology-encoding
-   :max-epochs 500
+   :max-epochs 1000
    :max-weight-intial 0.5
-   :learning-rate 0.02
-   :validation-stop-threshold 0.03})
+   :learning-rate 0.01
+   :validation-stop-threshold 0.02})
 
 (swap! cloann/nn-params #(merge % nn-params))
-;(cloann/run-cloann nn-params)
+(cloann/run-cloann nn-params)
 
-(def uwm (cloann/generate-uninitialized-weight-matrix (:layers (:topology-encoding @cloann/nn-params))
+;(def uwm (cloann/generate-uninitialized-weight-matrix (:layers (:topology-encoding @cloann/nn-params))
                                                       (:layer-connections (:topology-encoding @cloann/nn-params))))
 
 ;(util/matrix-2d-pretty-print uwm)
 
-(def wm (cloann/initialize-weights uwm
-                                   (:max-weight-intial @cloann/nn-params)))
+;(def wm (cloann/initialize-weights uwm
+;                                   (:max-weight-intial @cloann/nn-params)))
 
-(def ff (cloann/feed-forward (first (:inputs (:training-set (:data-sets @cloann/nn-params))))
-                             wm))
+;(def ff (cloann/feed-forward (first (:inputs (:training-set (:data-sets @cloann/nn-params))))
+;                             wm))
 
 ;ff
 
 
 
-(def bp (cloann/backpropagation (first (:inputs (:training-set (:data-sets @cloann/nn-params))))
-                                (first (:outputs (:training-set (:data-sets @cloann/nn-params))))
-                                wm
-                                0.1))
+;(def bp (cloann/backpropagation (first (:inputs (:training-set (:data-sets @cloann/nn-params))))
+;                                (first (:outputs (:training-set (:data-sets @cloann/nn-params))))
+;                                wm
+;                                0.1))
 
-(util/matrix-2d-pretty-print bp)
+;(util/matrix-2d-pretty-print bp)
