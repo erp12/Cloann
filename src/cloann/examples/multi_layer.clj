@@ -46,9 +46,11 @@
 
 ;ff
 
+
+
 (def bp (cloann/backpropagation (first (:inputs (:training-set (:data-sets @cloann/nn-params))))
                                 (first (:outputs (:training-set (:data-sets @cloann/nn-params))))
                                 wm
                                 0.1))
 
-bp
+(util/matrix-2d-pretty-print bp)

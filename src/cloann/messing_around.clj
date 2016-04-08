@@ -12,17 +12,13 @@
 ;(def bar [[:H2 :O] [:H1 :H2] [:I :H1]])
 ;(util/sort-layer-connections bar)
 
+(defn foo
+  [l]
+  (+ l [10 20]))
+
 (def wm [[1 2]
          [3 4]
          [5 6]])
 
-(def e [0.1 0.5])
 
-; Looking for a vector of 3 elements
-
-(def deltas (map (fn [x] (apply + x))
-                 (map * wm (repeat e))))
-
-(def eta 0.1)
-
-(def 
+(apply foo wm)

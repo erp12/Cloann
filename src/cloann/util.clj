@@ -110,8 +110,9 @@ Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elem
                                (first (split-at (.indexOf layer-ids to-id) 
                                                 layer-ids))))
         height (:num-nodes (from-id layers))
-        width (:num-nodes (to-id layers))]
-    (sub-matrix matrix start-row start-col height width)))
+        width (:num-nodes (to-id layers))
+        result (sub-matrix matrix start-row start-col height width)]
+    (vec (doall result))))
 
 (defn get-connection-matrix-by-id-with-bias
   "Same as get-connection-matrix-by-id, but includes row of relevant bias nodes."
@@ -124,9 +125,10 @@ Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elem
                                                          (first (split-at (.indexOf layer-ids to-id) 
                                                                           layer-ids))))
                                   width (:num-nodes (to-id layers))]
-                              (subvec all-bias-weights start-col (+ start-col width)))]
-    (concat connection-matrix-without-bias
-            [bias-for-connection])))
+                              (subvec all-bias-weights start-col (+ start-col width)))
+        result (concat connection-matrix-without-bias
+                       [bias-for-connection])]
+    (vec (doall result))))
 
 (defn create-2D-vector-of-val
   "Creates vector of vectors of given dimensions where every value is x."
