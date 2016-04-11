@@ -111,7 +111,11 @@ Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elem
                                                 layer-ids))))
         height (:num-nodes (from-id layers))
         width (:num-nodes (to-id layers))
-        result (sub-matrix matrix start-row start-col height width)]
+        result (sub-matrix matrix 
+                           start-row 
+                           start-col 
+                           height
+                           width)]
     (vec (doall result))))
 
 (defn get-connection-matrix-by-id-with-bias

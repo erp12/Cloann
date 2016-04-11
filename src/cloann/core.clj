@@ -56,17 +56,34 @@ that are connected."
 (defn initialize-weights
   "replaces all 0s in the matrix with random weight w where -max-w < w < max-w.
 Leaves the nils in the matrix."
-  [matrix max-w]
-  (clojure.walk/walk
-    (fn [x]
-      (clojure.walk/walk #(if (= 0 %)
-                            (- (rand (* 2 
-                                        max-w))
-                               max-w))
-                         #(vec %)
-                         x))
-    (fn [x] (vec x))
-    matrix))
+  [uwm max-w]
+  (loop [wm uwm
+         r 0
+         c 0]
+    (cond 
+      (>= r
+          (first (shape wm)))
+      (vec wm)
+      (>= c
+          (second (shape wm)))
+      (recur wm
+             (inc r)
+             0)
+      :else
+      (if (= (get-in wm [r c])
+             0)
+        (recur (assoc-in wm
+                         [r c]
+                         (- (rand (* 2 
+                                     max-w))
+                            max-w))
+               r
+               (inc c))
+        (recur wm 
+               r
+               (inc c))))))
+
+
 
 (defn feed-forward-layer
   "Computes the output of a single connection between layers of the 
@@ -213,7 +230,7 @@ neural network given the inputs and the weights."
   (let [; Inital randomized weights to the network
         initial-weight-matrix (initialize-weights (generate-uninitialized-weight-matrix (:layers (:topology-encoding @nn-params))
                                                                                         (:layer-connections (:topology-encoding @nn-params)))
-                                                  (:max-weight-intial @nn-params))
+                                                  (:max-weight-initial @nn-params))
         ; inputs to the network
         inputs (:inputs (:training-set data-sets))
         outputs (:outputs (:training-set data-sets))]
@@ -257,7 +274,7 @@ neural network given the inputs and the weights."
                 validation-eval (evaluate-network (:inputs (:validation-set data-sets))
                                                   (:outputs (:validation-set data-sets))
                                                   weights)]
-            (println "Starting Epoch" (inc epoch))
+            (println "Starting Epoch:" (inc epoch) "| Validation Error:" (last validation-error))
             (recur 
               ; Increment the epoch number
               (inc epoch)

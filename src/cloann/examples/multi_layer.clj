@@ -14,10 +14,12 @@
 
 (def topology-encoding 
   {:layers  {:I {:num-nodes 4}
-             :H1 {:num-nodes 5}
+             :H1 {:num-nodes 20}
+             :H2 {:num-nodes 10}
              :O {:num-nodes 3}}
    :layer-connections [[:I  :H1]
-                       [:H1 :O]]})
+                       [:H1 :H2]
+                       [:H2 :O]]})
 (def nn-params
   {:data-sets (dIO/create-data-sets-from-3-matrices training-data-matrix
                                                     testing-data-matrix
@@ -25,16 +27,15 @@
                                                     [0 1 2 3] ; Input indexes
                                                     [4 5 6]) ; Output indexes
    :topology-encoding topology-encoding
-   :max-epochs 1000
-   :max-weight-intial 0.5
+   :max-epochs 5000
+   :max-weight-initial 0.5
    :learning-rate 0.01
    :validation-stop-threshold 0.02})
 
-(swap! cloann/nn-params #(merge % nn-params))
 (cloann/run-cloann nn-params)
 
 ;(def uwm (cloann/generate-uninitialized-weight-matrix (:layers (:topology-encoding @cloann/nn-params))
-                                                      (:layer-connections (:topology-encoding @cloann/nn-params))))
+;                                                      (:layer-connections (:topology-encoding @cloann/nn-params))))
 
 ;(util/matrix-2d-pretty-print uwm)
 
