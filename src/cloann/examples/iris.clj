@@ -1,7 +1,8 @@
 (ns cloann.examples.iris
   (:require [cloann.core :as cloann]
             [cloann.dataIO :as dIO]
-            [cloann.util :as util]))
+            [cloann.util :as util]
+            [cloann.transfer-functions :as tran-funcs]))
 
 ;; Matrix of all the data from the csv file
 (def training-data-matrix
@@ -11,17 +12,54 @@
 (def validation-data-matrix
   (dIO/csv->matrix "data/iris_validation.csv" false))
 
+;(def topology-encoding 
+;  {:layers  {:I {:num-nodes 4}
+;             :H1 {:num-nodes 8}
+;             :H2 {:num-nodes 6}
+;             :O {:num-nodes 3}}
+;   :layer-connections [[:I  :H1]
+;                       [:H1 :H2]
+;                       [:H2 :O]]})
+
+(def topology-encoding
+  {:layers {:I {:num-nodes 4} 
+            :O {:num-nodes 3}
+            :H1 {:num-nodes 3}}
+   :layer-connections [[:O :H1] [:H1 :I] [:I :O]]}
+)
+
 (def nn-params
   {:data-sets (dIO/create-data-sets-from-3-matrices training-data-matrix
                                                     testing-data-matrix
                                                     validation-data-matrix
                                                     [0 1 2 3] ; Input indexes
                                                     [4 5 6]) ; Output indexes
-   :max-epochs 500
-   :max-weight-intial 0.5
-   :learning-rate 0.02
-   :validation-stop-threshold 0.03})
+   :topology-encoding topology-encoding
+   :max-epochs 200
+   :max-weight-initial 0.2
+   :learning-rate 0.05
+   :validation-stop-threshold 0.02})
 
-(cloann/run-cloann nn-params)
+(cloann/run-cloann nn-params true)
 
-;(util/data-set-pretty-print (:testing-set (:data-sets nn-params)))
+;(def uwm (cloann/generate-uninitialized-weight-matrix (:layers (:topology-encoding @cloann/nn-params))
+;                                                      (:layer-connections (:topology-encoding @cloann/nn-params))))
+
+;(util/matrix-2d-pretty-print uwm)
+
+;(def wm (cloann/initialize-weights uwm
+;                                   (:max-weight-intial @cloann/nn-params)))
+
+;(def ff (cloann/feed-forward (first (:inputs (:training-set (:data-sets @cloann/nn-params))))
+;                             wm))
+
+;ff
+
+
+
+;(def bp (cloann/backpropagation (first (:inputs (:training-set (:data-sets @cloann/nn-params))))
+;                                (first (:outputs (:training-set (:data-sets @cloann/nn-params))))
+;                                wm
+;                                0.1))
+
+;(util/matrix-2d-pretty-print bp)

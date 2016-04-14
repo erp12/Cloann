@@ -189,6 +189,33 @@ Taken from: http://stackoverflow.com/questions/4053845/idomatic-way-to-iterate-t
                  start-col
                  m))))))
 
+(defn replace-layer-connection-weights-and-bias-in-matrix
+  "Replaces a sub-matrix inside the weight matrix and the
+corrisponding bias weights."
+  [matrix layers [from-id to-id] new-mat]
+  (let [result (replace-layer-connection-weights-in-matrix matrix
+                                                           layers 
+                                                           [from-id to-id] 
+                                                           (vec butlast new-mat))
+        layer-ids (keys layers)
+        start-col (reduce +
+                          (map #(:num-nodes (% layers))
+                               (first (split-at (.indexOf layer-ids to-id) 
+                                                layer-ids))))
+        width (:num-nodes (to-id layers))
+        result (assoc result
+                      (dec (count result))
+                      (loop [i start-col
+                             b-vec (last result)]
+                        (if (< i (+ start-col width))
+                          (recur (inc i)
+                                 (assoc b-vec
+                                        i
+                                        (get (last new-mat)
+                                             i)))
+                          b-vec)))]
+    result))
+
 (defn num-nodes-in-network
   "Based on layers encoding, returns number of nodes in the network."
   [layers]
@@ -220,3 +247,26 @@ sequencially through layers."
                (concat sorted-layer-conns
                        found-layers)
                (vec (map #(second %) found-layers)))))))
+
+(defn remove-useless-topology-from-encoding
+  "Removed layer-connections and layers from a network encoding that will have
+no effect on training."
+  [old-topology-encoding]
+  (let [removed-useless-connections (assoc old-topology-encoding
+                                           :layer-connections
+                                           (vec (filter (fn [c] 
+                                                          (if (or (= :I (second c))
+                                                                  (= :O (first c)))
+                                                            false
+                                                            true))
+                                                        (:layer-connections old-topology-encoding))))
+        removed-useless-layers (assoc removed-useless-connections
+                                      :layers
+                                      (into {}
+                                            (filter (fn [l]
+                                                      (if (in? (flatten (:layer-connections removed-useless-connections))
+                                                               (first l))
+                                                        true
+                                                        false))
+                                                    (:layers removed-useless-connections))))]
+    removed-useless-layers))

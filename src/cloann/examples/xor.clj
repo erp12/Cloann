@@ -12,7 +12,7 @@
 
 (def topology-encoding 
   {:layers  {:I {:num-nodes 2}
-             :H1 {:num-nodes 3}
+             :H1 {:num-nodes 2}
              :O {:num-nodes 1}}
    :layer-connections [[:I  :H1]
                        [:H1 :O]]})
@@ -24,9 +24,9 @@
                                                     [0 1] ; Input indexes
                                                     [2]) ; Output indexes
    :topology-encoding topology-encoding
-   :max-epochs 10000
-   :max-weight-initial 1.0
-   :learning-rate 0.01
+   :max-epochs 1000
+   :max-weight-initial 0.1
+   :learning-rate 0.5
    :validation-stop-threshold 0.1})
 
 (cloann/run-cloann nn-params)

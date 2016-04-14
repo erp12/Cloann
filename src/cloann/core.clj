@@ -135,9 +135,9 @@ neural network given the inputs and the weights."
                                                                         ff-outputs-matrix)))
                             (* (count output-patterns)
                                (count (first output-patterns))))
-        classes (map util/output->class ff-outputs-matrix)
-        ;classification-error 
-        ]
+        classes (map util/output->class ff-outputs-matrix)]
+    ;classification-error 
+    
     {:regresion-error regression-error
      :classification-error 0}))
 
@@ -147,7 +147,7 @@ neural network given the inputs and the weights."
   (vec
     (map (fn [x] (apply + x))
          (map * 
-              weight-matrix-from-this-layer 
+              weight-matrix-from-this-layer
               (repeat errors-of-next-layer)))))
 
 (defn calculate-new-weight
@@ -184,6 +184,28 @@ neural network given the inputs and the weights."
              r
              (inc c)))))
 
+;(defn update-bias-weights
+;  ""
+;  [weight-matrix error-signals]
+;  (let [layers (:layers (:topology-encoding @nn-params))
+;        old-bias-vec (last weight-matrix)
+;        delta-bias-vec (concat (loop [ret (:I error-signals)
+;                                      hidden-index 1]
+;                                 (if (> hidden-index
+;                                        (count (:layers (:topology-encoding @nn-params))))
+;                                   ret
+;                                   (recur (concat ret
+;                                                  (get error-signals
+;                                                       (keyword (str "H"
+;                                                                     hidden-index))))
+;                                          (inc hidden-index))))
+;                               (:O error-signals))
+;        new-bias-vec (vec (map +
+;                               old-bias-vec
+;                               delta-bias-vec))]
+;    (vec (concat (butlast weight-matrix)
+;                 [new-bias-vec]))))
+
 (defn backpropagation 
   "Returns the new weights for the network after 1 step of back propagation."
   [input-pattern output-pattern weight-matrix learning-rate]
@@ -204,9 +226,12 @@ neural network given the inputs and the weights."
                                                                                                         (first remaining-layer-connections-back))
                                                                       (get deltas
                                                                            (second (first remaining-layer-connections-back))))))))]
+    ;(println error-signals)
     (loop [remaining-layer-connections (:ff-order ff-result)
            new-weight-matrix weight-matrix]
       (if (empty? remaining-layer-connections)
+        ;(update-bias-weights new-weight-matrix
+        ;                     error-signals)
         new-weight-matrix
         (recur
           (rest remaining-layer-connections)
@@ -226,85 +251,114 @@ neural network given the inputs and the weights."
 
 
 (defn train-nn
-  [data-sets]
-  (let [; Inital randomized weights to the network
-        initial-weight-matrix (initialize-weights (generate-uninitialized-weight-matrix (:layers (:topology-encoding @nn-params))
-                                                                                        (:layer-connections (:topology-encoding @nn-params)))
-                                                  (:max-weight-initial @nn-params))
-        ; inputs to the network
-        inputs (:inputs (:training-set data-sets))
-        outputs (:outputs (:training-set data-sets))]
-    (loop [; nn's training epoch
-           epoch 0
-           ; current set of weights for the network
-           weights initial-weight-matrix
-           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-           ; Tracking info for reporting later
-           training-error []
-           training-classification-error []
-           testing-error []
-           testing-classification-error []
-           validation-error []
-           validation-classification-error []]
-      (let [max-epochs-reached? (= epoch 
-                                   (:max-epochs @nn-params))
-            stop-threshold-reached? (and (not (empty? validation-error))
-                                         (< (last validation-error)
-                                            (:validation-stop-threshold @nn-params)))]
-        (if (or max-epochs-reached?
-                stop-threshold-reached?)
-          (do
-            (println "Training finished. Now draw some graphs.")
-            (if stop-threshold-reached?
-              (println "Validation Stop Threshold Reached"))
-            (if max-epochs-reached?
-              (println "Max Epochs Reached"))
-            (report/plot-nn-evaluations training-error
-                                        training-classification-error
-                                        testing-error
-                                        testing-classification-error
-                                        validation-error
-                                        validation-classification-error))
-          (let [training-eval (evaluate-network (:inputs (:training-set data-sets))
-                                                (:outputs (:training-set data-sets))
-                                                weights)
-                testing-eval (evaluate-network (:inputs (:testing-set data-sets))
-                                               (:outputs (:testing-set data-sets))
-                                               weights)
-                validation-eval (evaluate-network (:inputs (:validation-set data-sets))
-                                                  (:outputs (:validation-set data-sets))
-                                                  weights)]
-            (println "Starting Epoch:" (inc epoch) "| Validation Error:" (last validation-error))
-            (recur 
-              ; Increment the epoch number
-              (inc epoch)
-              ; Apply the results of the backpropagation as the new weights
-              
-              (loop [wm weights
-                     remaining-patterns-inds (shuffle (range (count (:inputs (:validation-set data-sets)))))]
-                (if (empty? remaining-patterns-inds)
-                  wm
-                  (recur (backpropagation (nth (:inputs (:testing-set data-sets)) 
-                                               (first remaining-patterns-inds))
-                                          (nth (:outputs (:testing-set data-sets)) 
-                                               (first remaining-patterns-inds))
-                                          wm
-                                          (:learning-rate @nn-params))
-                         (rest remaining-patterns-inds))))
-              ;;;;;;;;;;;;;;;;;;;;;;;;
-              ; Append errors to vectors for reporting
-              (conj training-error (:regresion-error training-eval))
-              (conj training-classification-error (:classification-error training-eval))
-              (conj testing-error (:regresion-error testing-eval))
-              (conj testing-classification-error (:classification-error testing-eval))
-              (conj validation-error (:regresion-error validation-eval))
-              (conj validation-classification-error (:classification-error validation-eval)))))))))
+  ([data-sets]
+    (train-nn true))
+  ([data-sets print-progress?]
+    (let [; Inital randomized weights to the network
+          initial-weight-matrix (initialize-weights (generate-uninitialized-weight-matrix (:layers (:topology-encoding @nn-params))
+                                                                                          (:layer-connections (:topology-encoding @nn-params)))
+                                                    (:max-weight-initial @nn-params))
+          ; inputs to the network
+          inputs (:inputs (:training-set data-sets))
+          outputs (:outputs (:training-set data-sets))]
+      (loop [; nn's training epoch
+             epoch 0
+             ; current set of weights for the network
+             weights initial-weight-matrix
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+             ; Tracking info for reporting later
+             training-error []
+             training-classification-error []
+             testing-error []
+             testing-classification-error []
+             validation-error []
+             validation-classification-error []]
+        (let [max-epochs-reached? (= epoch 
+                                     (:max-epochs @nn-params))
+              stop-threshold-reached? (and (not (empty? validation-error))
+                                           (< (last validation-error)
+                                              (:validation-stop-threshold @nn-params)))]
+          (if (or max-epochs-reached?
+                  stop-threshold-reached?)
+            (do
+              (if print-progress?
+                (do
+                  (println "Training finished. Now draw some graphs.")
+                  (if stop-threshold-reached?
+                    (println "Validation Stop Threshold Reached"))
+                  (if max-epochs-reached?
+                    (println "Max Epochs Reached"))
+                  (report/plot-nn-evaluations training-error
+                                              training-classification-error
+                                              testing-error
+                                              testing-classification-error
+                                              validation-error
+                                              validation-classification-error)))
+              {:final-validation-error (last validation-error)
+               :final-testing-error (last testing-error)
+               :final-training-error (last training-error)
+               :solution-found stop-threshold-reached?})
+            (let [training-eval (evaluate-network (:inputs (:training-set data-sets))
+                                                  (:outputs (:training-set data-sets))
+                                                  weights)
+                  testing-eval (evaluate-network (:inputs (:testing-set data-sets))
+                                                 (:outputs (:testing-set data-sets))
+                                                 weights)
+                  validation-eval (evaluate-network (:inputs (:validation-set data-sets))
+                                                    (:outputs (:validation-set data-sets))
+                                                    weights)]
+              (if print-progress?
+                (println "Starting Epoch:" (inc epoch) 
+                         "| Validation Error:" (last validation-error)))
+              (recur 
+                ; Increment the epoch number
+                (inc epoch)
+                ; Apply the results of the backpropagation as the new weights
+                
+                (loop [wm weights
+                       remaining-patterns-inds (shuffle (range (count (:inputs (:validation-set data-sets)))))]
+                  (if (empty? remaining-patterns-inds)
+                    wm
+                    (recur (backpropagation (nth (:inputs (:testing-set data-sets)) 
+                                                 (first remaining-patterns-inds))
+                                            (nth (:outputs (:testing-set data-sets)) 
+                                                 (first remaining-patterns-inds))
+                                            wm
+                                            (:learning-rate @nn-params))
+                           (rest remaining-patterns-inds))))
+                ;;;;;;;;;;;;;;;;;;;;;;;;
+                ; Apphend errors to vectors for reporting
+                (conj training-error (:regresion-error training-eval))
+                (conj training-classification-error (:classification-error training-eval))
+                (conj testing-error (:regresion-error testing-eval))
+                (conj testing-classification-error (:classification-error testing-eval))
+                (conj validation-error (:regresion-error validation-eval))
+                (conj validation-classification-error (:classification-error validation-eval))))))))))
 
 (defn run-cloann
-  [params]
+  [params print-progress?]
   (swap! nn-params #(merge % params))
-  ;(println (:data-sets @nn-params))
-  (train-nn (:data-sets @nn-params)))
+  
+  (if print-progress?
+   (do
+     (println "Training neural network based on following topology:")
+     (println  (:topology-encoding @nn-params))
+     (println ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;")))
+  
+  (swap! nn-params (fn [i] (assoc i
+                                  :topology-encoding
+                                  (util/remove-useless-topology-from-encoding (:topology-encoding i)))))
+  (swap! nn-params (fn [i] (assoc-in i
+                                     [:topology-encoding :layer-connections]
+                                     (util/sort-layer-connections (:layer-connections (:topology-encoding i))))))
+
+  (if print-progress?
+   (do
+     (println "Topology after simplification:")
+     (println  (:topology-encoding @nn-params))
+     (println ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;")))
+  
+  (train-nn (:data-sets @nn-params) print-progress?))
 
 (defn -main 
   []
