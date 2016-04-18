@@ -93,14 +93,14 @@ Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elem
 
 (defn get-connection-matrix-by-id
   "Returns a sub matrix for the connections between the two layers."
-  [matrix layers [from-id to-id]]
+  [matrix layers order-of-layers [from-id to-id]]
   ;(println "gcmbi")
   ;(println matrix)
   ;(println layers)
   ;(println from-id)
   ;(println to-id)
   ;(println)
-  (let [layer-ids (keys layers)
+  (let [layer-ids order-of-layers
         start-row (reduce +
                           (map #(:num-nodes (% layers))
                                (first (split-at (.indexOf layer-ids from-id) 
@@ -120,10 +120,13 @@ Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elem
 
 (defn get-connection-matrix-by-id-with-bias
   "Same as get-connection-matrix-by-id, but includes row of relevant bias nodes."
-  [matrix layers [from-id to-id]]
-  (let [connection-matrix-without-bias (get-connection-matrix-by-id matrix layers [from-id to-id])
+  [matrix layers order-of-layers [from-id to-id]]
+  (let [connection-matrix-without-bias (get-connection-matrix-by-id matrix 
+                                                                    layers
+                                                                    order-of-layers
+                                                                    [from-id to-id])
         all-bias-weights (last matrix)
-        bias-for-connection (let [layer-ids (keys layers)
+        bias-for-connection (let [layer-ids order-of-layers
                                   start-col (reduce +
                                                     (map #(:num-nodes (% layers))
                                                          (first (split-at (.indexOf layer-ids to-id) 
@@ -151,8 +154,8 @@ Taken from: http://stackoverflow.com/questions/4053845/idomatic-way-to-iterate-t
 
 (defn replace-layer-connection-weights-in-matrix
   "Replaces a sub-matrix inside the weight matrix."
-  [matrix layers [from-id to-id] new-mat]
-  (let [layer-ids (keys layers)
+  [matrix layers order-of-layers [from-id to-id] new-mat]
+  (let [layer-ids order-of-layers
         start-row (reduce +
                           (map #(:num-nodes (% layers))
                                (first (split-at (.indexOf layer-ids from-id) 
@@ -166,12 +169,9 @@ Taken from: http://stackoverflow.com/questions/4053845/idomatic-way-to-iterate-t
     (loop [r start-row
            c start-col
            m matrix]
-      (if (and (= r 
-                  (+ start-row
-                     height))
-               (= c
-                  (+ start-col
-                     width)))
+      (if (= r 
+             (+ start-row
+                height))
         m
         (if (< c
                (+ start-col
@@ -192,12 +192,13 @@ Taken from: http://stackoverflow.com/questions/4053845/idomatic-way-to-iterate-t
 (defn replace-layer-connection-weights-and-bias-in-matrix
   "Replaces a sub-matrix inside the weight matrix and the
 corrisponding bias weights."
-  [matrix layers [from-id to-id] new-mat]
+  [matrix layers order-of-layers [from-id to-id] new-mat]
   (let [result (replace-layer-connection-weights-in-matrix matrix
                                                            layers 
+                                                           order-of-layers
                                                            [from-id to-id] 
                                                            (vec butlast new-mat))
-        layer-ids (keys layers)
+        layer-ids order-of-layers
         start-col (reduce +
                           (map #(:num-nodes (% layers))
                                (first (split-at (.indexOf layer-ids to-id) 
@@ -239,8 +240,14 @@ sequencially through layers."
     (let [found-layers (filter #(in? looking-for-connections-from
                                      (first %)) 
                                remaining-layer-conns)]
-      (if (empty? remaining-layer-conns)
+      (cond
+        (empty? remaining-layer-conns); All the layers have been sorted
         sorted-layer-conns
+        (empty? looking-for-connections-from); Useless layer has been found, take it out! (THIS SHOULD MOVE)
+        (do
+          (println "That code that shouldn't run just ran, but its cool. [FORWARD]")
+          sorted-layer-conns)
+        :else
         (recur (remove #(in? looking-for-connections-from
                              (first %))
                        remaining-layer-conns)
@@ -248,18 +255,59 @@ sequencially through layers."
                        found-layers)
                (vec (map #(second %) found-layers)))))))
 
+(defn sort-layer-connections-back
+  "Sorts layer connections so that signal begins at output layer and is passed
+sequencially through layers, backwards."
+  [layer-conns]
+  (loop [remaining-layer-conns layer-conns
+         sorted-layer-conns []
+         looking-for-connections-from [:O]]
+    (let [found-layers (filter #(in? looking-for-connections-from
+                                     (second %)) 
+                               remaining-layer-conns)]
+      (cond
+        (empty? remaining-layer-conns); All the layers have been sorted
+        sorted-layer-conns
+        (empty? looking-for-connections-from); Useless layer has been found, take it out! (THIS SHOULD MOVE)
+        (do
+          (println "That code that shouldn't run just ran, but its cool. [BACK]")
+          sorted-layer-conns)
+        :else
+        (recur (remove #(in? looking-for-connections-from
+                             (second %))
+                       remaining-layer-conns)
+               (concat sorted-layer-conns
+                       found-layers)
+               (vec (map #(first %) found-layers)))))))
+
 (defn remove-useless-topology-from-encoding
   "Removed layer-connections and layers from a network encoding that will have
 no effect on training."
   [old-topology-encoding]
+  ;(println "Start toplogy simplify")
   (let [removed-useless-connections (assoc old-topology-encoding
                                            :layer-connections
-                                           (vec (filter (fn [c] 
-                                                          (if (or (= :I (second c))
-                                                                  (= :O (first c)))
-                                                            false
-                                                            true))
-                                                        (:layer-connections old-topology-encoding))))
+                                           (vec
+                                             (loop [remaining-layer-conns (:layer-connections old-topology-encoding)
+                                                    new-layer-conns []
+                                                    looking-for-connections-to [:O]]
+                                               (let [found-layers-conns (filter #(in? looking-for-connections-to
+                                                                                      (second %)) 
+                                                                                remaining-layer-conns)]
+                                                 (cond
+                                                   (empty? remaining-layer-conns)
+                                                   new-layer-conns
+                                                   (empty? looking-for-connections-to)
+                                                   new-layer-conns
+                                                   :else
+                                                   (recur (remove #(in? looking-for-connections-to
+                                                                        (second %))
+                                                                  remaining-layer-conns)
+                                                          (concat new-layer-conns
+                                                                  found-layers-conns)
+                                                          (vec (map #(first %) 
+                                                                    found-layers-conns))))))))
+        ;foo (println "Done connection simplify")
         removed-useless-layers (assoc removed-useless-connections
                                       :layers
                                       (into {}
@@ -268,5 +316,9 @@ no effect on training."
                                                                (first l))
                                                         true
                                                         false))
-                                                    (:layers removed-useless-connections))))]
-    removed-useless-layers))
+                                                    (:layers removed-useless-connections))))
+        ;foo (println "Done layers simplify")
+        ]
+    (assoc removed-useless-layers
+           :layer-connections
+           (vec (:layer-connections removed-useless-layers)))))

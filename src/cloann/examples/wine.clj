@@ -9,12 +9,10 @@
 
 (def topology-encoding 
   {:layers  {:I {:num-nodes 12}
-             :H1 {:num-nodes 8}
-             :H2 {:num-nodes 4}
+             :H1 {:num-nodes 1}
              :O {:num-nodes 3}}
    :layer-connections [[:I  :H1]
-                       [:H1 :H2]
-                       [:H2 :O]]})
+                       [:H1 :O]]})
 
 (def nn-params
   {:data-sets (dIO/create-data-sets-from-1-matrix data-matrix
@@ -24,9 +22,9 @@
                                                   100     ; Number of observations to take for testing
                                                   100)    ; Number of observations to take for validation
    :topology-encoding topology-encoding
-   :max-epochs 1000
+   :max-epochs 3
    :max-weight-intial 1
    :learning-rate 0.1
    :validation-stop-threshold 0.03})
 
-;(cloann/run-cloann nn-params)
+;(cloann/run-cloann nn-params true)

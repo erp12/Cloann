@@ -111,7 +111,7 @@
                              (mod (stack-ref :integer 0 state)
                                   (count (:layer-connections nn-info))))
           num-nodes(:num-nodes (get (:layers nn-info)
-                                      (first edge-to-split)))
+                                    (first edge-to-split)))
           
           temp (insert-hidden-layer (remove-layer-connection nn-info 
                                                              edge-to-split)
@@ -154,14 +154,19 @@
     (let [nn-info (top-item :auxilary state)
           edge-to-reverse (nth (:layer-connections nn-info)
                                (mod (stack-ref :integer 0 state)
-                                    (count (:layer-connections nn-info))))
-          nn-without-edge (remove-layer-connection nn-info edge-to-reverse)
-          nn-info (new-layer-connection nn-without-edge [(second edge-to-reverse)
-                                                         (first edge-to-reverse)])]
-      (->> 
-        (pop-item :integer state)
-        (pop-item :auxilary)
-        (push-item nn-info :auxilary)))
+                                    (count (:layer-connections nn-info))))]
+      (if (or (= (first edge-to-reverse)
+                 :I)
+              (= (second edge-to-reverse)
+                 :O))
+        state
+        (let [nn-without-edge (remove-layer-connection nn-info edge-to-reverse)
+              nn-info (new-layer-connection nn-without-edge [(second edge-to-reverse)
+                                                             (first edge-to-reverse)])]
+          (->> 
+            (pop-item :integer state)
+            (pop-item :auxilary)
+            (push-item nn-info :auxilary)))))
     state)))
 
 (define-registered

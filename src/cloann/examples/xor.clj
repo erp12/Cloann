@@ -29,4 +29,4 @@
    :learning-rate 0.5
    :validation-stop-threshold 0.1})
 
-(cloann/run-cloann nn-params)
+(cloann/run-cloann nn-params true)

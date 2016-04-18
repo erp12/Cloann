@@ -53,21 +53,41 @@
                                  :auxilary
                                  (make-push-state)))
         topology-encoding (first (:auxilary final-state))
-        foo (do
-              (println topology-encoding)
-              (flush))
         nn-params {:data-sets data-sets
                    :topology-encoding topology-encoding
-                   :max-epochs 500
+                   :max-epochs 200
                    :max-weight-initial 0.1
                    :learning-rate 0.1
-                   :validation-stop-threshold 0.02}
-        training-result (cloann/run-cloann nn-params true)]
+                   :validation-stop-threshold 0.01}
+        training-result (cloann/run-cloann nn-params false)]
     (if (:solution-found training-result)
-      [0 0 0]
+      (do
+        (println "||NAILED IT||")
+        [0 0 0])
       [(:final-validation-error training-result)
        (:final-testing-error training-result)
        (:final-training-error training-result)])))
+
+(defn gelnn-report
+  "Custom generational report."
+  [best population generation error-function report-simplifications]
+  (let [best-program (not-lazy (:program best))
+        best-test-errors (error-function best-program :test)
+        best-total-test-error (apply +' best-test-errors)]
+    (println ";;******************************")
+    (printf ";; -*- GELNN Iris Report - generation %s\n" generation)(flush)
+    (println "Test total error for best:" best-total-test-error)
+    (println (format "Test mean error for best: %.5f" (double (/ best-total-test-error (count best-test-errors)))))
+    (when (zero? (:total-error best))
+      (doseq [[i error] (map vector
+                             (range)
+                             best-test-errors)]
+        (println (format "Test Case  %3d | Error: %s" i (str error)))))
+    (println ";;------------------------------")
+    (println "Outputs of best individual on training cases:")
+    (error-function best-program :train true)
+    (println ";;******************************")
+    ))
 
 ; 
 (def argmap
@@ -77,8 +97,8 @@
    :max-points 200
    :max-genome-size-in-initial-program 50
    :evalpush-limit 200
-   :population-size 10
-   :max-generations 200
+   :population-size 5
+   :max-generations 100
    :parent-selection :lexicase
    :genetic-operator-probabilities {:alternation 0.2
                                     :uniform-mutation 0.2
@@ -87,6 +107,8 @@
    :alternation-rate 0.01
    :alignment-deviation 10
    :uniform-mutation-rate 0.01
+   :print-behavioral-diversity false
+   :report-simplifications 0
    :final-report-simplifications 5000})
 
 (pushgp argmap)
