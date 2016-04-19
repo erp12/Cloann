@@ -170,7 +170,7 @@ neural network given the inputs and the weights."
                   output-previous-node))]
     ret))
 
-(defn new-inter-layer-connection-weights ; <- THE PROBLEM IS THIS MATRIX RETURNS ONE EXTRA ROW
+(defn new-inter-layer-connection-weights
   ""
   [old-weights to-layer-error-signals to-layer-SWI from-layer-outputs]
   (loop [new-weights old-weights
@@ -257,6 +257,8 @@ neural network given the inputs and the weights."
           (let [current-conn (first remaining-layer-connections)
                 from-layer (first current-conn)
                 to-layer (second current-conn)
+                ;asdfkasdkjh (println "FROM" from-layer "TO" to-layer)
+                ;sfkjasljffs (println (:layer-outputs ff-result))
                 current-conn-old-weights (util/get-connection-matrix-by-id new-weight-matrix
                                                                            (:layers (:topology-encoding @nn-params))
                                                                            (:layer-order-in-weight-matrix (:topology-encoding @nn-params))
@@ -381,11 +383,12 @@ neural network given the inputs and the weights."
                                      [:topology-encoding :layer-order-in-weight-matrix]
                                      (vec (keys (:layers (:topology-encoding i)))))))
   
-  (if print-progress?
+  ;(if print-progress?
     (do
       (println "Topology after simplification:")
       (println  (:topology-encoding @nn-params))
-      (println ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;")))
+      (println ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"))
+    ;)
   
   (train-nn (:data-sets @nn-params) print-progress?))
 
