@@ -97,8 +97,8 @@
    :max-points 200
    :max-genome-size-in-initial-program 50
    :evalpush-limit 200
-   :population-size 5
-   :max-generations 100
+   :population-size 50
+   :max-generations 10
    :parent-selection :lexicase
    :genetic-operator-probabilities {:alternation 0.2
                                     :uniform-mutation 0.2
@@ -109,6 +109,7 @@
    :uniform-mutation-rate 0.01
    :print-behavioral-diversity false
    :report-simplifications 0
-   :final-report-simplifications 5000})
+   :final-report-simplifications 500
+   :return-simplified-on-failure true})
 
 (pushgp argmap)
