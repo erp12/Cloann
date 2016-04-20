@@ -46,7 +46,7 @@
           ;(registered-for-stacks [:integer :exec])))
 
 ; CLOJUSH ERROR FUNCTIONS
-(defn network-evo-error-function
+(defn student-network-evo-error-function
   [program]
   (let [final-state (run-push program 
                               (push-item embryo-encoding
@@ -55,10 +55,10 @@
         topology-encoding (first (:auxilary final-state))
         nn-params {:data-sets data-sets
                    :topology-encoding topology-encoding
-                   :max-epochs 200
-                   :max-weight-initial 0.1
-                   :learning-rate 0.1
-                   :validation-stop-threshold 0.01}
+                   :max-epochs 500
+                   :max-weight-initial 0.15
+                   :learning-rate 0.01
+                   :validation-stop-threshold 0.002}
         training-result (cloann/run-cloann nn-params false)]
     (if (:solution-found training-result)
       (do
@@ -91,14 +91,14 @@
 
 ; 
 (def argmap
-  {:use-single-thread true
-   :error-function network-evo-error-function
+  {:use-single-thread false 
+   :error-function student-network-evo-error-function
    :atom-generators gelnn-atom-generators
    :max-points 200
-   :max-genome-size-in-initial-program 50
+   :max-genome-size-in-initial-program 40
    :evalpush-limit 200
-   :population-size 5
-   :max-generations 10
+   :population-size 100
+   :max-generations 500
    :parent-selection :lexicase
    :genetic-operator-probabilities {:alternation 0.2
                                     :uniform-mutation 0.2
@@ -109,6 +109,7 @@
    :uniform-mutation-rate 0.01
    :print-behavioral-diversity false
    :report-simplifications 0
-   :final-report-simplifications 5000})
+   :final-report-simplifications 500
+   :return-simplified-on-failure true})
 
 (pushgp argmap)

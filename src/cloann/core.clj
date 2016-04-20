@@ -344,12 +344,12 @@ neural network given the inputs and the weights."
               ; Apply the results of the backpropagation as the new weights
               
               (loop [wm weights
-                     remaining-patterns-inds (shuffle (range (count (:inputs (:validation-set data-sets)))))]
+                     remaining-patterns-inds (shuffle (range (count (:inputs (:training-set data-sets)))))]
                 (if (empty? remaining-patterns-inds)
                   wm
-                  (recur (backpropagation (nth (:inputs (:testing-set data-sets)) 
+                  (recur (backpropagation (nth (:inputs (:training-set data-sets)) 
                                                (first remaining-patterns-inds))
-                                          (nth (:outputs (:testing-set data-sets)) 
+                                          (nth (:outputs (:training-set data-sets)) 
                                                (first remaining-patterns-inds))
                                           wm
                                           (:learning-rate @nn-params))
@@ -393,5 +393,7 @@ neural network given the inputs and the weights."
   (train-nn (:data-sets @nn-params) print-progress?))
 
 (defn -main 
-  []
-  (println "I don't do anything yet..."))
+  ""
+  [& args]
+  (let [example-ns (symbol (first args))]
+    (require world-ns)))

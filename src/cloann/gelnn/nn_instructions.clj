@@ -41,10 +41,13 @@
 (defn remove-layer-connection
   "Returns network-info with layer connection removed."
   [network-info [from-id to-id]]
-  (let [layer-conns (:layer-connections network-info)
-        new-layer-conns (remove #(= [from-id to-id] %)
-                                layer-conns)]
-    (assoc network-info :layer-connections new-layer-conns)))
+  (if (and (= from-id :I)
+           (= to-id :O))
+    network-info
+    (let [layer-conns (:layer-connections network-info)
+          new-layer-conns (remove #(= [from-id to-id] %)
+                                  layer-conns)]
+      (assoc network-info :layer-connections new-layer-conns))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Instructions

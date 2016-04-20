@@ -5,14 +5,14 @@
             [cloann.transfer-functions :as tran-funcs]))
 
 ;; Matrix of all the data from the csv file
-(def training-data-matrix
+(def student-training-data-matrix
   (dIO/csv->matrix "data/norm_student_alc_training.csv" true))
-(def testing-data-matrix
+(def student-testing-data-matrix
   (dIO/csv->matrix "data/norm_student_alc_testing.csv" true))
-(def validation-data-matrix
+(def student-validation-data-matrix
   (dIO/csv->matrix "data/norm_student_alc_validation.csv" true))
 
-(def topology-encoding
+(def student-topology-encoding
   {:layers {:I {:num-nodes 24}
             :O {:num-nodes 3}
 ;            :H1 {:num-nodes 3}
@@ -22,16 +22,16 @@
 )
 
 (def student-nn-params
-  {:data-sets (dIO/create-data-sets-from-3-matrices training-data-matrix
-                                                    testing-data-matrix
-                                                    validation-data-matrix
+  {:data-sets (dIO/create-data-sets-from-3-matrices student-training-data-matrix
+                                                    student-testing-data-matrix
+                                                    student-validation-data-matrix
                                                     (vec (range 24)) ; Input indexes
                                                     [24 25 26]) ; Output indexes
-   :topology-encoding topology-encoding
-   :max-epochs 500
+   :topology-encoding student-topology-encoding
+   :max-epochs 800
    :max-weight-initial 0.2
-   :learning-rate 0.05
-   :validation-stop-threshold 0.02})
+   :learning-rate 0.01
+   :validation-stop-threshold 0.002})
 
 (cloann/run-cloann student-nn-params true)
 
