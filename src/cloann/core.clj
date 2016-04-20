@@ -396,4 +396,4 @@ neural network given the inputs and the weights."
   ""
   [& args]
   (let [example-ns (symbol (first args))]
-    (require world-ns)))
+    (require example-ns)))
