@@ -1,0 +1,1 @@
+{:layers {:I {:num-nodes 24}, :O {:num-nodes 3}}, :layer-connections ([:I :O]), :layer-order-in-weight-matrix [:I :O]}
