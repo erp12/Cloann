@@ -42,8 +42,8 @@
             'nn_loop
             'nn_reverse
             'nn_set_num_nodes_layer
-            (fn [] (lrand-int 100)))))
-          ;(registered-for-stacks [:integer :exec])))
+            (fn [] (lrand-int 100)))
+          (registered-for-stacks [:integer :exec])))
 
 ; CLOJUSH ERROR FUNCTIONS
 (defn student-network-evo-error-function
