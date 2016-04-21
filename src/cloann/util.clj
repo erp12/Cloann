@@ -122,7 +122,7 @@ Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elem
       (let [dateString (str (get-date-time-string))
             dir (str "gelnn_error_logs/")]
         (.mkdir (java.io.File. "nn_reporting/"))
-        (spit (str dir dateString "_" (rand) ".txt")
+        (spit (str dir dateString "_" (int (* 100000 (rand))) "_error_log.txt")
               topology-encoding)
         (println (str "I caught an exception: " (.getMessage e)))))))
 
