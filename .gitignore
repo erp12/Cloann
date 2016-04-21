@@ -1,5 +1,6 @@
 ### Reports ###
 *.png
+*error_log.txt
 
 ### OSX ###
 .DS_Store
