@@ -1,0 +1,1 @@
+{:layers {:I {:num-nodes 24}, :O {:num-nodes 3}, :H1 {:num-nodes 3}}, :layer-connections ([:O :H1] [:I :O])}
