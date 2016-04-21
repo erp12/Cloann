@@ -116,8 +116,7 @@ neural network given the inputs and the weights."
             ;foo (println "About to FFL:" (first remaining-layer-connections))
             ff-layer-result (feed-forward-layer ((first (first remaining-layer-connections)) known-outputs)
                                                 (util/get-connection-matrix-by-id-with-bias weight-matrix
-                                                                                            (:layers (:topology-encoding @nn-params))
-                                                                                            (:layer-order-in-weight-matrix (:topology-encoding @nn-params))
+                                                                                            (:topology-encoding @nn-params)
                                                                                             (first remaining-layer-connections)))]
         (recur (rest remaining-layer-connections)
                (assoc known-outputs
@@ -237,8 +236,7 @@ neural network given the inputs and the weights."
                                         (do
                                           ;(println "deltas" deltas "| rlb" remaining-layer-connections-back)
                                           (error-signal-of-hidden-layer (util/get-connection-matrix-by-id weight-matrix
-                                                                                                          (:layers (:topology-encoding @nn-params))
-                                                                                                          (:layer-order-in-weight-matrix (:topology-encoding @nn-params))
+                                                                                                          (:topology-encoding @nn-params)
                                                                                                           (first remaining-layer-connections-back))
                                                                         (get deltas
                                                                              (second (first remaining-layer-connections-back)))))))))]
@@ -260,8 +258,7 @@ neural network given the inputs and the weights."
                 ;asdfkasdkjh (println "FROM" from-layer "TO" to-layer)
                 ;sfkjasljffs (println (:layer-outputs ff-result))
                 current-conn-old-weights (util/get-connection-matrix-by-id new-weight-matrix
-                                                                           (:layers (:topology-encoding @nn-params))
-                                                                           (:layer-order-in-weight-matrix (:topology-encoding @nn-params))
+                                                                           (:topology-encoding @nn-params)
                                                                            current-conn)
                 ;akjfaks (println ">NILCW>" from-layer to-layer)
                 new-sub-weight-matrix (new-inter-layer-connection-weights current-conn-old-weights

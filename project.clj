@@ -1,6 +1,6 @@
 (defproject cloann "0.0.1-SNAPSHOT"
   :description "FIXME: write description"
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
                  [net.mikera/vectorz-clj "0.35.0"]
                  [org.clojure/data.csv "0.1.3"]
                  [incanter "1.5.6"]

@@ -93,45 +93,52 @@ Taken from here: http://stackoverflow.com/questions/7744656/how-do-i-filter-elem
 
 (defn get-connection-matrix-by-id
   "Returns a sub matrix for the connections between the two layers."
-  [matrix layers order-of-layers [from-id to-id]]
+  [matrix topology-encoding [from-id to-id]]
   ;(println "gcmbi")
   ;(println matrix)
   ;(println layers)
   ;(println from-id)
   ;(println to-id)
   ;(println)
-  (let [layer-ids order-of-layers
-        start-row (reduce +
-                          (map #(:num-nodes (% layers))
-                               (first (split-at (.indexOf layer-ids from-id) 
-                                                layer-ids))))
-        start-col (reduce +
-                          (map #(:num-nodes (% layers))
-                               (first (split-at (.indexOf layer-ids to-id) 
-                                                layer-ids))))
-        height (:num-nodes (from-id layers))
-        width (:num-nodes (to-id layers))
-        result (sub-matrix matrix 
-                           start-row 
-                           start-col 
-                           height
-                           width)]
-    (vec (doall result))))
+  (try
+    (let [layer-ids (:layer-order-in-weight-matrix topology-encoding)
+          start-row (reduce +
+                            (map #(:num-nodes (% (:layers topology-encoding)))
+                                 (first (split-at (.indexOf layer-ids from-id) 
+                                                  layer-ids))))
+          start-col (reduce +
+                            (map #(:num-nodes (% (:layers topology-encoding)))
+                                 (first (split-at (.indexOf layer-ids to-id) 
+                                                  layer-ids))))
+          height (:num-nodes (from-id (:layers topology-encoding)))
+          width (:num-nodes (to-id (:layers topology-encoding)))
+          result (sub-matrix matrix 
+                             start-row 
+                             start-col 
+                             height
+                             width)]
+      (vec (doall result)))
+    (catch Exception e
+      (let [dateString (str (get-date-time-string))
+            dir (str "gelnn_error_logs/")]
+        (.mkdir (java.io.File. "nn_reporting/"))
+        (spit (str dir dateString ".txt")
+              topology-encoding)
+        (println (str "I caught an exception: " (.getMessage e)))))))
 
 (defn get-connection-matrix-by-id-with-bias
   "Same as get-connection-matrix-by-id, but includes row of relevant bias nodes."
-  [matrix layers order-of-layers [from-id to-id]]
+  [matrix topology-encoding [from-id to-id]]
   (let [connection-matrix-without-bias (get-connection-matrix-by-id matrix 
-                                                                    layers
-                                                                    order-of-layers
+                                                                    topology-encoding
                                                                     [from-id to-id])
         all-bias-weights (last matrix)
-        bias-for-connection (let [layer-ids order-of-layers
+        bias-for-connection (let [layer-ids (:layer-order-in-weight-matrix topology-encoding)
                                   start-col (reduce +
-                                                    (map #(:num-nodes (% layers))
+                                                    (map #(:num-nodes (% (:layers topology-encoding)))
                                                          (first (split-at (.indexOf layer-ids to-id) 
                                                                           layer-ids))))
-                                  width (:num-nodes (to-id layers))]
+                                  width (:num-nodes (to-id (:layers topology-encoding)))]
                               (subvec all-bias-weights start-col (+ start-col width)))
         result (concat connection-matrix-without-bias
                        [bias-for-connection])]

@@ -13,12 +13,11 @@
   (dIO/csv->matrix "data/norm_student_alc_validation.csv" true))
 
 (def student-topology-encoding
-  {:layers {:I {:num-nodes 24}
-            :O {:num-nodes 3}
-;            :H1 {:num-nodes 3}
-;            :H3 {:num-nodes 3}
-            }
-   :layer-connections [[:I :O]]}
+{:layers {:I {:num-nodes 24}
+          :O {:num-nodes 3}
+          :H3 {:num-nodes 24}}
+ :layer-connections [[:I :O] [:I :H3] [:H3 :O]]
+ }
 )
 
 (def student-nn-params
@@ -28,10 +27,10 @@
                                                     (vec (range 24)) ; Input indexes
                                                     [24 25 26]) ; Output indexes
    :topology-encoding student-topology-encoding
-   :max-epochs 800
-   :max-weight-initial 0.2
+   :max-epochs 10
+   :max-weight-initial 0.15
    :learning-rate 0.01
-   :validation-stop-threshold 0.002})
+   :validation-stop-threshold 0.0025})
 
 (cloann/run-cloann student-nn-params true)
 
