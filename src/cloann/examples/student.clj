@@ -1,49 +1,37 @@
-(ns cloann.examples.iris
+(ns cloann.examples.student
   (:require [cloann.core :as cloann]
             [cloann.dataIO :as dIO]
             [cloann.util :as util]
             [cloann.transfer-functions :as tran-funcs]))
 
 ;; Matrix of all the data from the csv file
-(def training-data-matrix
-  (dIO/csv->matrix "data/iris_training.csv" false))
-(def testing-data-matrix
-  (dIO/csv->matrix "data/iris_testing.csv" false))
-(def validation-data-matrix
-  (dIO/csv->matrix "data/iris_validation.csv" false))
+(def student-training-data-matrix
+  (dIO/csv->matrix "data/norm_student_alc_training.csv" true))
+(def student-testing-data-matrix
+  (dIO/csv->matrix "data/norm_student_alc_testing.csv" true))
+(def student-validation-data-matrix
+  (dIO/csv->matrix "data/norm_student_alc_validation.csv" true))
 
-(println (count training-data-matrix))
-
-;(def topology-encoding 
-;  {:layers  {:I {:num-nodes 4}
-;             :H1 {:num-nodes 8}
-;             :H2 {:num-nodes 6}
-;             :O {:num-nodes 3}}
-;   :layer-connections [[:I  :H1]
-;                       [:H1 :H2]
-;                       [:H2 :O]]})
-
-(def topology-encoding
-  {:layers {:I {:num-nodes 4}
-            :O {:num-nodes 3}
-            :H1 {:num-nodes 4}
-            :H2 {:num-nodes 4}}
-   :layer-connections [[:I :H1] [:H1 :H2] [:H2 :H1] [:I :O] [:H1 :O]]}
+(def student-topology-encoding
+{:layers {:I {:num-nodes 24}
+          :O {:num-nodes 3}
+          :H1 {:num-nodes 3}}
+ :layer-connections [[:H1 :O] [:I :O]]}
 )
 
-(def iris-nn-params
-  {:data-sets (dIO/create-data-sets-from-3-matrices training-data-matrix
-                                                    testing-data-matrix
-                                                    validation-data-matrix
-                                                    [0 1 2 3] ; Input indexes
-                                                    [4 5 6]) ; Output indexes
-   :topology-encoding topology-encoding
-   :max-epochs 300
-   :max-weight-initial 0.2
-   :learning-rate 0.1
-   :validation-stop-threshold 0.02})
+(def student-nn-params
+  {:data-sets (dIO/create-data-sets-from-3-matrices student-training-data-matrix
+                                                    student-testing-data-matrix
+                                                    student-validation-data-matrix
+                                                    (vec (range 24)) ; Input indexes
+                                                    [24 25 26]) ; Output indexes
+   :topology-encoding student-topology-encoding
+   :max-epochs 10
+   :max-weight-initial 0.15
+   :learning-rate 0.01
+   :validation-stop-threshold 0.0025})
 
-(cloann/run-cloann iris-nn-params true)
+(cloann/run-cloann student-nn-params true)
 
 
 ;;;;;;;;;;;;;;;;
@@ -52,7 +40,7 @@
 
 
 (comment
-(swap! cloann/nn-params #(merge % iris-nn-params))
+(swap! cloann/nn-params #(merge % student-nn-params))
 
 (swap! cloann/nn-params (fn [i] (assoc i
                                        :topology-encoding
@@ -82,19 +70,6 @@
 (println)
 )
 
-(comment
-(def blah (util/replace-layer-connection-weights-in-matrix wm
-                                                           (:layers (:topology-encoding @cloann/nn-params))
-                                                           (:layer-order-in-weight-matrix (:topology-encoding @cloann/nn-params))
-                                                           [:H1 :H1]
-                                                           [[:AA :AA :AA :AA]
-                                                            [:AA :AA :AA :AA]
-                                                            [:AA :AA :AA :AA]
-                                                            [:AA :AA :AA :AA]]))
-
-(util/matrix-2d-pretty-print blah)
-)
-
 ;(def sub-wm (util/get-connection-matrix-by-id-with-bias wm
 ;                                                        (:layers (:topology-encoding @cloann/nn-params)) 
 ;                                                        [:I :O :H1 :H2] 
@@ -106,7 +81,7 @@
 ;                             wm))
 
 ;ff
-a
+
 ;(def bp (cloann/backpropagation (first (:inputs (:training-set (:data-sets @cloann/nn-params))))
 ;                                (first (:outputs (:training-set (:data-sets @cloann/nn-params))))
 ;                                wm

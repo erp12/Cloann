@@ -1,4 +1,4 @@
-(ns cloann.activation-functions
+(ns cloann.transfer-functions
   (:require [cloann.util :as util])
   (:use clojure.core.matrix)
   (:use clojure.core.matrix.operators))
