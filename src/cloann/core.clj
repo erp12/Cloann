@@ -14,7 +14,6 @@
      :transfer-func-derivative transfer-funcs/hyperbolic-tangent-derivative
      :max-weight-initial 1
      :data-set nil ; Must be set in problem file
-     :topology-encoding nil ; Must be set in problem file
      :plot-graphs true
      :learning-rate 0.02
      :max-epochs 500
@@ -24,35 +23,33 @@
 (defn generate-sub-matrices-from-layer-data
   "Returns uninitialized weight matrices for each inter-layer connections.
 0 are uninitialized weights, and nils are no connection."
-  [layers layer-conns layers-order]
-  (let [distinct-ids layers-order
+  [topology]
+  (let [distinct-ids (:layer-order-in-weight-matrix topology)
         all-id-pairs (combo/selections distinct-ids 2)]
     (partition
       (count distinct-ids)
       (for [ids all-id-pairs]
-        (let [i ((first ids) layers)
-              o ((second ids) layers)]
+        (let [i ((first ids) (:layers topology))
+              o ((second ids) (:layers topology))]
           (util/create-2D-vector-of-val (:num-nodes i)
                                         (:num-nodes o)
                                         (if (some #(= ids %) 
-                                                  layer-conns)
+                                                  (:layer-connections topology))
                                           0
                                           nil)))))))
 
 (defn generate-uninitialized-weight-matrix
   "Returns entire network matrix with uninitialized weights between layers
 that are connected."
-  [layers layer-conns layers-order]
+  [topology]
   (vec (doall
-    (let [sub-weight-matries (generate-sub-matrices-from-layer-data layers 
-                                                                    layer-conns
-                                                                    layers-order)]
+    (let [sub-weight-matries (generate-sub-matrices-from-layer-data topology)]
       (concat
         (reduce concat
                 (map #(reduce util/horizontal-matrix-concatenation 
                               %)
                      sub-weight-matries))
-        [(vec (repeat (util/num-nodes-in-network (:layers (:topology-encoding @nn-params)))
+        [(vec (repeat (util/num-nodes-in-network (:layers topology))
                       0))])))))
 
 (defn initialize-weights
@@ -100,9 +97,9 @@ neural network given the inputs and the weights."
 
 (defn feed-forward
   "Takes input values and returns the outputs based on network weights."
-  [input-values weight-matrix]
+  [input-values weight-matrix topology]
   ;(println "FEED FORWARD | Bias:" (last weight-matrix))
-  (loop [remaining-layer-connections (util/sort-layer-connections (:layer-connections (:topology-encoding @nn-params)))
+  (loop [remaining-layer-connections (util/sort-layer-connections (:layer-connections topology))
          known-outputs {:I input-values}
          result {:output nil
                  :sum-of-weighted-inputs {}
@@ -116,7 +113,7 @@ neural network given the inputs and the weights."
             ;foo (println "About to FFL:" (first remaining-layer-connections))
             ff-layer-result (feed-forward-layer ((first (first remaining-layer-connections)) known-outputs)
                                                 (util/get-connection-matrix-by-id-with-bias weight-matrix
-                                                                                            (:topology-encoding @nn-params)
+                                                                                            topology
                                                                                             (first remaining-layer-connections)))]
         (recur (rest remaining-layer-connections)
                (assoc known-outputs
@@ -133,10 +130,11 @@ neural network given the inputs and the weights."
 
 (defn evaluate-network
   "Returns the error, and classification error of the network on a particular data-set"
-  [input-patterns output-patterns weight-matrix]
+  [input-patterns output-patterns weight-matrix topology]
   (let [ff-results (map feed-forward
                         input-patterns
-                        (repeat weight-matrix))
+                        (repeat weight-matrix)
+                        (repeat topology))
         ff-outputs-matrix (vec (map #(:output %)
                                     ff-results))
         regression-error (/ (util/sum-all-2D-matrix-components (emap square
@@ -218,11 +216,12 @@ neural network given the inputs and the weights."
 
 (defn backpropagation 
   "Returns the new weights for the network after 1 step of back propagation."
-  [input-pattern output-pattern weight-matrix learning-rate]
+  [input-pattern output-pattern weight-matrix topology learning-rate]
   (let [; Feed sample through network
         ; foo (println "FF in BP")
         ff-result (feed-forward input-pattern
-                                weight-matrix)
+                                weight-matrix
+                                topology)
         error-of-output (- output-pattern 
                            (:output ff-result))
         error-signals (loop [remaining-layer-connections-back (util/sort-layer-connections-back
@@ -236,7 +235,7 @@ neural network given the inputs and the weights."
                                         (do
                                           ;(println "deltas" deltas "| rlb" remaining-layer-connections-back)
                                           (error-signal-of-hidden-layer (util/get-connection-matrix-by-id weight-matrix
-                                                                                                          (:topology-encoding @nn-params)
+                                                                                                          topology
                                                                                                           (first remaining-layer-connections-back))
                                                                         (get deltas
                                                                              (second (first remaining-layer-connections-back)))))))))]
@@ -258,7 +257,7 @@ neural network given the inputs and the weights."
                 ;asdfkasdkjh (println "FROM" from-layer "TO" to-layer)
                 ;sfkjasljffs (println (:layer-outputs ff-result))
                 current-conn-old-weights (util/get-connection-matrix-by-id new-weight-matrix
-                                                                           (:topology-encoding @nn-params)
+                                                                           topology
                                                                            current-conn)
                 ;akjfaks (println ">NILCW>" from-layer to-layer)
                 new-sub-weight-matrix (new-inter-layer-connection-weights current-conn-old-weights
@@ -270,18 +269,16 @@ neural network given the inputs and the weights."
             ;(println)
             ;(println (shape new-sub-weight-matrix))
             (util/replace-layer-connection-weights-in-matrix new-weight-matrix
-                                                             (:layers (:topology-encoding @nn-params))
-                                                             (:layer-order-in-weight-matrix (:topology-encoding @nn-params))
+                                                             (:layers topology)
+                                                             (:layer-order-in-weight-matrix topology)
                                                              current-conn
                                                              new-sub-weight-matrix)))))))
 
 
 (defn train-nn
-  [data-sets print-progress?]
+  [data-sets topology print-progress?]
   (let [; Inital randomized weights to the network
-        initial-weight-matrix (initialize-weights (generate-uninitialized-weight-matrix (:layers (:topology-encoding @nn-params))
-                                                                                        (:layer-connections (:topology-encoding @nn-params))
-                                                                                        (:layer-order-in-weight-matrix (:topology-encoding @nn-params)))
+        initial-weight-matrix (initialize-weights (generate-uninitialized-weight-matrix topology)
                                                   (:max-weight-initial @nn-params))
         ; inputs to the network
         inputs (:inputs (:training-set data-sets))
@@ -325,13 +322,16 @@ neural network given the inputs and the weights."
              :solution-found stop-threshold-reached?})
           (let [training-eval (evaluate-network (:inputs (:training-set data-sets))
                                                 (:outputs (:training-set data-sets))
-                                                weights)
+                                                weights
+                                                topology)
                 testing-eval (evaluate-network (:inputs (:testing-set data-sets))
                                                (:outputs (:testing-set data-sets))
-                                               weights)
+                                               weights
+                                               topology)
                 validation-eval (evaluate-network (:inputs (:validation-set data-sets))
                                                   (:outputs (:validation-set data-sets))
-                                                  weights)]
+                                                  weights
+                                                  topology)]
             (if print-progress?
               (println "Starting Epoch:" (inc epoch) 
                        "| Validation Error:" (last validation-error)))
@@ -349,6 +349,7 @@ neural network given the inputs and the weights."
                                           (nth (:outputs (:training-set data-sets)) 
                                                (first remaining-patterns-inds))
                                           wm
+                                          topology
                                           (:learning-rate @nn-params))
                          (rest remaining-patterns-inds))))
               ;;;;;;;;;;;;;;;;;;;;;;;;
@@ -361,33 +362,33 @@ neural network given the inputs and the weights."
               (conj validation-classification-error (:classification-error validation-eval)))))))))
 
 (defn run-cloann
-  [params print-progress?]
+  [params topology print-progress?]
   (swap! nn-params #(merge % params))
   
   (if print-progress?
     (do
       (println "Training neural network based on following topology:")
-      (println  (:topology-encoding @nn-params))
+      (println  topology)
       (println ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;")))
   
-  (swap! nn-params (fn [i] (assoc i
-                                  :topology-encoding
-                                  (util/remove-useless-topology-from-encoding (:topology-encoding i)))))
-  (swap! nn-params (fn [i] (assoc-in i
-                                     [:topology-encoding :layer-connections]
-                                     (util/sort-layer-connections (:layer-connections (:topology-encoding i))))))
-  (swap! nn-params (fn [i] (assoc-in i
-                                     [:topology-encoding :layer-order-in-weight-matrix]
-                                     (vec (keys (:layers (:topology-encoding i)))))))
-  
-  ;(if print-progress?
+  (let [stripped-topology (util/remove-useless-topology-from-encoding topology)
+        sorted-topology (assoc stripped-topology
+                               :layer-connections
+                               (util/sort-layer-connections (:layer-connections stripped-topology)))
+        final-topology (assoc sorted-topology
+                              :layer-order-in-weight-matrix
+                              (vec (keys (:layers sorted-topology))))]
+    
+    ;(if print-progress?
     (do
       (println "Topology after simplification:")
-      (println  (:topology-encoding @nn-params))
+      (println  final-topology)
       (println ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"))
     ;)
-  
-  (train-nn (:data-sets @nn-params) print-progress?))
+    
+    (train-nn (:data-sets @nn-params)
+              final-topology
+              print-progress?)))
 
 (defn -main 
   ""

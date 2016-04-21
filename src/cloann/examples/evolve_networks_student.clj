@@ -54,12 +54,11 @@
                                  (make-push-state)))
         topology-encoding (first (:auxilary final-state))
         nn-params {:data-sets data-sets
-                   :topology-encoding topology-encoding
                    :max-epochs 100
                    :max-weight-initial 0.15
                    :learning-rate 0.01
                    :validation-stop-threshold 0.0025}
-        training-result (cloann/run-cloann nn-params false)]
+        training-result (cloann/run-cloann nn-params topology-encoding false)]
     (if (:solution-found training-result)
       (do
         (println "||NAILED IT||")

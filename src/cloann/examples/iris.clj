@@ -12,8 +12,6 @@
 (def validation-data-matrix
   (dIO/csv->matrix "data/iris_validation.csv" false))
 
-(println (count training-data-matrix))
-
 ;(def topology-encoding 
 ;  {:layers  {:I {:num-nodes 4}
 ;             :H1 {:num-nodes 8}
@@ -37,13 +35,12 @@
                                                     validation-data-matrix
                                                     [0 1 2 3] ; Input indexes
                                                     [4 5 6]) ; Output indexes
-   :topology-encoding topology-encoding
    :max-epochs 300
    :max-weight-initial 0.2
    :learning-rate 0.1
    :validation-stop-threshold 0.02})
 
-(cloann/run-cloann iris-nn-params true)
+(cloann/run-cloann iris-nn-params topology-encoding true)
 
 
 ;;;;;;;;;;;;;;;;

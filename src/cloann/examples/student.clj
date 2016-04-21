@@ -25,7 +25,6 @@
                                                     student-validation-data-matrix
                                                     (vec (range 24)) ; Input indexes
                                                     [24 25 26]) ; Output indexes
-   :topology-encoding student-topology-encoding
    :max-epochs 10
    :max-weight-initial 0.15
    :learning-rate 0.01
