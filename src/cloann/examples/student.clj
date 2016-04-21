@@ -15,9 +15,8 @@
 (def student-topology-encoding
 {:layers {:I {:num-nodes 24}
           :O {:num-nodes 3}
-          :H3 {:num-nodes 24}}
- :layer-connections [[:I :O] [:I :H3] [:H3 :O]]
- }
+          :H1 {:num-nodes 3}}
+ :layer-connections [[:H1 :O] [:I :O]]}
 )
 
 (def student-nn-params
