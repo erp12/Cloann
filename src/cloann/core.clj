@@ -379,12 +379,12 @@ neural network given the inputs and the weights."
                               :layer-order-in-weight-matrix
                               (vec (keys (:layers sorted-topology))))]
     
-    ;(if print-progress?
+    (if print-progress?
     (do
       (println "Topology after simplification:")
       (println  final-topology)
       (println ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"))
-    ;)
+    )
     
     (train-nn (:data-sets @nn-params)
               final-topology
