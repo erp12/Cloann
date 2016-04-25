@@ -1,4 +1,4 @@
-(ns cloann.examples.evolve-networks-student
+(ns cloann.examples.evolve-networks-xor
   (:use [clojush.ns]
         [clojush translate]
         cloann.gelnn.nn-instructions)
