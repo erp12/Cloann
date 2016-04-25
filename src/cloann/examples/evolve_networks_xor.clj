@@ -12,26 +12,26 @@
 
 
 ; DATA SETS
-(def training-data-matrix
-  (dIO/csv->matrix "data/norm_student_alc_training.csv" true))
-(def testing-data-matrix
-  (dIO/csv->matrix "data/norm_student_alc_testing.csv" true))
-(def validation-data-matrix
-  (dIO/csv->matrix "data/norm_student_alc_validation.csv" true))
+(def data-matrix
+  [[0 0 0]
+   [0 1 1]
+   [1 0 1]
+   [1 1 0]])
+
 
 ; EMBRYO ENCODING
-(def num-inputs 24)
-(def num-outputs 3)
+(def num-inputs 2)
+(def num-outputs 1)
 (def embryo-encoding
   {:layers  {:I {:num-nodes num-inputs}
              :O {:num-nodes num-outputs}}
    :layer-connections [[:I  :O]]})
 (def data-sets
-  (dIO/create-data-sets-from-3-matrices training-data-matrix
-                                        testing-data-matrix
-                                        validation-data-matrix
-                                        (vec (range 24)) ; Input indexes
-                                        [24 25 26])) ; Output indexes
+  (dIO/create-data-sets-from-3-matrices data-matrix
+                                        data-matrix
+                                        data-matrix
+                                        [0 1] ; Input indexes
+                                        [2])) ; Output indexes
 
 ; CLOJUSH ATOM GENERATORS
 (def gelnn-atom-generators
@@ -42,7 +42,8 @@
             'nn_loop
             'nn_reverse
             'nn_set_num_nodes_layer
-            (fn [] (lrand-int 100)))
+            (fn [] (lrand-int 100))
+            (fn [] (lrand-int 10)))
           (registered-for-stacks [:integer :exec])))
 
 ; CLOJUSH ERROR FUNCTIONS
@@ -54,10 +55,10 @@
                                  (make-push-state)))
         topology-encoding (first (:auxilary final-state))
         nn-params {:data-sets data-sets
-                   :max-epochs 100
-                   :max-weight-initial 0.15
-                   :learning-rate 0.01
-                   :validation-stop-threshold 0.0025}
+                   :max-epochs 1000
+                   :max-weight-initial 0.1
+                   :learning-rate 0.5
+                   :validation-stop-threshold 0.08}
         training-result (cloann/run-cloann nn-params topology-encoding false)]
     (if (:solution-found training-result)
       (do
@@ -67,36 +68,14 @@
        (:final-testing-error training-result)
        (:final-training-error training-result)])))
 
-(defn gelnn-report
-  "Custom generational report."
-  [best population generation error-function report-simplifications]
-  (let [best-program (not-lazy (:program best))
-        best-test-errors (error-function best-program :test)
-        best-total-test-error (apply +' best-test-errors)]
-    (println ";;******************************")
-    (printf ";; -*- GELNN Iris Report - generation %s\n" generation)(flush)
-    (println "Test total error for best:" best-total-test-error)
-    (println (format "Test mean error for best: %.5f" (double (/ best-total-test-error (count best-test-errors)))))
-    (when (zero? (:total-error best))
-      (doseq [[i error] (map vector
-                             (range)
-                             best-test-errors)]
-        (println (format "Test Case  %3d | Error: %s" i (str error)))))
-    (println ";;------------------------------")
-    (println "Outputs of best individual on training cases:")
-    (error-function best-program :train true)
-    (println ";;******************************")
-    ))
-
-; 
 (def argmap
   {:use-single-thread false 
    :error-function student-network-evo-error-function
    :atom-generators gelnn-atom-generators
    :max-points 200
-   :max-genome-size-in-initial-program 40
+   :max-genome-size-in-initial-program 80
    :evalpush-limit 200
-   :population-size 100
+   :population-size 50
    :max-generations 50
    :parent-selection :lexicase
    :genetic-operator-probabilities {:alternation 0.2
@@ -108,7 +87,7 @@
    :uniform-mutation-rate 0.01
    :print-behavioral-diversity false
    :report-simplifications 0
-   :final-report-simplifications 500
+   :final-report-simplifications 40
    :return-simplified-on-failure true})
 
 (pushgp argmap)

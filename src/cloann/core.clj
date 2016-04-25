@@ -380,11 +380,11 @@ neural network given the inputs and the weights."
                               (vec (keys (:layers sorted-topology))))]
     
     (if print-progress?
-    (do
-      (println "Topology after simplification:")
-      (println  final-topology)
-      (println ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"))
-    )
+      (do
+        (println "Topology after simplification:")
+        (println  final-topology)
+        (println ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"))
+      (print "|"))
     
     (train-nn (:data-sets @nn-params)
               final-topology

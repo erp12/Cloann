@@ -26,6 +26,6 @@
    :max-epochs 1000
    :max-weight-initial 0.1
    :learning-rate 0.5
-   :validation-stop-threshold 0.1})
+   :validation-stop-threshold 0.08})
 
 (cloann/run-cloann nn-params topology-encoding  true)
