@@ -23,10 +23,9 @@
                                                     data-matrix
                                                     [0 1] ; Input indexes
                                                     [2]) ; Output indexes
-   :topology-encoding topology-encoding
    :max-epochs 1000
    :max-weight-initial 0.1
    :learning-rate 0.5
-   :validation-stop-threshold 0.1})
+   :validation-stop-threshold 0.08})
 
-(cloann/run-cloann nn-params true)
+(cloann/run-cloann nn-params topology-encoding  true)

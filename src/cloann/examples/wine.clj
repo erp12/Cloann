@@ -21,10 +21,9 @@
                                                   100     ; Number of observations to take for training
                                                   100     ; Number of observations to take for testing
                                                   100)    ; Number of observations to take for validation
-   :topology-encoding topology-encoding
    :max-epochs 3
    :max-weight-intial 1
    :learning-rate 0.1
    :validation-stop-threshold 0.03})
 
-;(cloann/run-cloann nn-params true)
+(cloann/run-cloann nn-params topology-encoding true)
